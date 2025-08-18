@@ -24,3 +24,7 @@
   [dataset-name & {::keys [resource-file-name file-path]
                    :or    {resource-file-name assessments-2025-file}}]
   (get (->map-of-datasets resource-file-name file-path) dataset-name))
+
+(defn A1-data []
+  (-> (->ds "A1")
+      (tc/drop-rows (range 0 7)))) ;; need to define column header maps and apply
