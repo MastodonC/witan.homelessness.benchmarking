@@ -16,7 +16,9 @@
                      io/file
                      io/input-stream)]
     (as-> in $
-      (fst/workbook->datasets $ (assoc options :header-row? false))
+      (fst/workbook->datasets $ (assoc options
+                                       :header-row? false
+                                       :key-fn      keyword))
       (reduce (fn [m coll] (assoc m (tc/dataset-name coll) coll)) {} $))))
 
 (defn ->ds
