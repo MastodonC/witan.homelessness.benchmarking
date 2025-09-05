@@ -22,27 +22,23 @@
       (reduce (fn [m coll] (assoc m (tc/dataset-name coll) coll)) {} $))))
 
 (defn ->ds
-  "Load dataset using tab name from homelessness statistics data"
-  [dataset-name & {::keys [resource-file-name file-path]
-                   :or    {resource-file-name assessments-2025-file}}]
-  (get (->map-of-datasets resource-file-name file-path) dataset-name))
-
-(defn A1-data []
-  (-> (->ds "A1")
-      (tc/drop-rows (range 0 7)))) ;; need to define column header maps and apply
-
-(def A1
-  (let [raw (->ds "A1")
+  "Load dataset using tab name from homelessness statistics data using the name
+   of the tab and the spreadsheet row numbers where the headers exist between"
+  [dataset-name first-row-with-headers last-row-with-headers
+   & {::keys [resource-file-name file-path]
+      :or    {resource-file-name assessments-2025-file}}]
+  (let [raw (get (->map-of-datasets resource-file-name file-path) dataset-name)
+        headers-range (range (dec first-row-with-headers) last-row-with-headers)
         cols (-> raw
-                 (tc/select-rows (range 4 7))
+                 (tc/select-rows headers-range)
                  (tc/info)
                  (tc/select-rows #(or (#{:column-0 :column-1} (:col-name %))
-                                      (> (count (range 4 7)) (:n-missing %))))
+                                      (> (count headers-range) (:n-missing %))))
                  :col-name
                  distinct
                  vec)
         col-titles (as-> raw $
-                     (tc/select-rows $ (range 4 7))
+                     (tc/select-rows $ headers-range)
                      (tc/select-columns $ cols)
                      (tc/add-columns $ {:column-0 "code"
                                         :column-1 "name"})
@@ -67,82 +63,51 @@
                                (s/replace " " "-")
                                keyword) $))]
     (-> raw
-        (tc/drop-rows (range 0 7))
+        (tc/drop-rows (range 0 (inc last-row-with-headers)))
         (tc/select-columns cols)
         (tc/rename-columns (reduce #(assoc %1 (first %2) (second %2)) {} (map vector cols col-titles)))
         (tc/drop-missing :code)
         (tc/select-rows #(s/starts-with? (:code %) "E")))))
 
-(def A2P
-  (let [raw (->ds "A2P")
-        cols (-> raw
-                 (tc/select-rows (range 3 7))
-                 (tc/info)
-                 (tc/select-rows #(or (#{:column-0 :column-1} (:col-name %))
-                                      (> (count (range 3 7)) (:n-missing %))))
-                 :col-name
-                 distinct
-                 vec)
-        col-titles (as-> raw $
-                     (tc/select-rows $ (range 3 7))
-                     (tc/select-columns $ cols)
-                     (tc/add-columns $ {:column-0 "code"
-                                        :column-1 "name"})
-                     (tc/replace-missing $)
-                     (tc/last $)
-                     (tc/rows $)
-                     (first $)
-                     (map #(-> %
-                               (s/replace #"\n" " ")
-                               (s/replace "1,2,6" "")
-                               (s/replace #"\d$" "")
-                               (s/replace "area5" "area")
-                               (s/replace "/" "")
-                               (s/replace "(000s)" "1000")
-                               (s/replace " -  " " ")
-                               (s/replace " - " " ")
-                               (s/replace "\"" "")
-                               (s/replace "," "")
-                               (s/replace "(" "")
-                               (s/replace ")" "")
-                               (s/lower-case)
-                               (s/replace " " "-")
-                               keyword) $))]
-    (-> raw
-        (tc/drop-rows (range 0 7))
-        (tc/select-columns cols)
-        (tc/rename-columns (reduce #(assoc %1 (first %2) (second %2)) {} (map vector cols col-titles)))
-        (tc/drop-missing :code)
-        (tc/select-rows #(s/starts-with? (:code %) "E")))))
 
-#_(def A2R
-    (let [raw (->ds "A2R")
-          cols (-> raw
-                   (tc/select-rows (range 4 7))
-                   (tc/drop-columns #(= :boolean %) :datatype))
-          col-titles (as-> cols $
-                       (tc/add-columns $ {:column-0 "code"
-                                          :column-1 "name"})
-                       (tc/replace-missing $)
-                       (tc/last $)
-                       (tc/rows $)
-                       (first $)
-                       (map #(-> %
-                                 (s/replace #"\n" " ")
-                                 (s/replace "1,2,6" "")
-                                 (s/replace #"3$" "")
-                                 (s/replace #"4$" "")
-                                 (s/replace "area5" "area")
-                                 (s/replace "/" "")
-                                 (s/replace "(000s)" "1000")
-                                 (s/replace " -  " " ")
-                                 (s/replace " - " " ")
-                                 (s/lower-case)
-                                 (s/replace " " "-")
-                                 keyword) $))]
-      (-> raw
-          (tc/drop-rows (range 0 7))
-          (tc/select-columns (tc/column-names cols))
-          (tc/rename-columns (reduce #(assoc %1 (first %2) (second %2)) {} (map vector (tc/column-names cols) col-titles)))
-          (tc/drop-missing :code)
-          (tc/select-rows #(s/starts-with? (:code %) "E")))))
+(def A1-data
+  (->ds "A1" 5 6))
+
+(def A2P-data
+  (->ds "A2P" 4 7))
+
+(def A2R-data
+  (->ds "A2R" 5 7))
+
+(def A3-data
+  (->ds "A3" 4 5))
+
+(def A4P-data
+  (->ds "A4P" 4 6))
+
+(def A4R-data
+  (->ds "A4R" 4 6))
+
+(def A5P-data
+  (->ds "A5P" 4 5))
+
+(def A5R-data
+  (->ds "A5R" 4 5))
+
+(def A6-data
+  (->ds "A6" 4 4))
+
+(def A7-data
+  (->ds "A7" 6 8))
+
+(def A8-data
+  (->ds "A8" 4 6))
+
+(def A10-data
+  (->ds "A10" 4 6))
+
+(def A12-data
+  (->ds "A12" 2 6))
+
+(def A13-data
+  (->ds "A13" 5 5))
