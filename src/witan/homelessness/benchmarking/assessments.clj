@@ -5,7 +5,61 @@
    [tablecloth.api :as tc]
    [tech.v3.libs.fastexcel :as fst]))
 
-(def assessments-2025-file "./homelessness-statistics/Detailed_LA_202503.xlsx")
+(def assessments-202503-file "./homelessness-statistics/Detailed_LA_202503.xlsx")
+
+(def assessments-202412-file "./homelessness-statistics/Detailed_LA_202412.xlsx")
+
+(def assessments-202409-file "./homelessness-statistics/Detailed_LA_202409.xlsx")
+
+(def assessments-202406-file "./homelessness-statistics/Detailed_LA_202406_fix.xlsx")
+
+(def assessments-202403-file "./homelessness-statistics/Detailed_LA_202403.xlsx")
+
+(def assessments-202312-file "./homelessness-statistics/Detailed_LA_202312.xlsx")
+
+(def assessments-202309-file "./homelessness-statistics/Detailed_LA_202309_fixed.xlsx")
+
+(def assessments-202306-file "./homelessness-statistics/Detailed_LA_202306_all_dropdowns_fix.xlsx")
+
+(def assessments-202303-file "./homelessness-statistics/Detailed_LA_202303.xlsx")
+
+(def assessments-202212-file "./homelessness-statistics/Detailed_LA_202212.xlsx")
+
+(def assessments-202209-file "./homelessness-statistics/Detailed_LA_202209.xlsx")
+
+(def assessments-202206-file "./homelessness-statistics/Detailed_LA_202206.xlsx")
+
+(def assessments-202203-file "./homelessness-statistics/Detailed_LA_202203.xlsx")
+
+(def assessments-202112-file "./homelessness-statistics/DetailedLA_202112.xlsx")
+
+(def assessments-202109-file "./homelessness-statistics/DetailedLA_202109_fixed.xlsx")
+
+(def assessments-202106-file "./homelessness-statistics/DetailedLA_202106.xlsx")
+
+(def assessments-202103-file "./homelessness-statistics/DetailedLA_202103_revised.xlsx")
+
+(def assessments-202012-file "./homelessness-statistics/DetailedLA_202012.xlsx")
+
+(def assessments-202009-file "./homelessness-statistics/DetailedLA_202009_REVISED.xlsx")
+
+(def assessments-202006-file "./homelessness-statistics/DetailedLA_202006.xlsx")
+
+(def assessments-202003-file "./homelessness-statistics/DetailedLA_202003.xlsx")
+
+(def assessments-201912-file "./homelessness-statistics/DetailedLA_201912.xlsx")
+
+(def assessments-201909-file "./homelessness-statistics/DetailedLA_201909_revised.xlsx")
+
+(def assessments-201906-file "./homelessness-statistics/DetailedLA_201906_revised.xlsx")
+
+(def assessments-201903-file "./homelessness-statistics/DetailedLA_201903_revised.xlsx")
+
+(def assessments-201812-file "./homelessness-statistics/DetailedLA_201812.xlsx")
+
+(def assessments-201809-file "./homelessness-statistics/DetailedLA_201809.xlsx")
+
+(def assessments-201806-file "./homelessness-statistics/DetailedLA_201806.xlsx")
 
 (defn ->map-of-datasets
   "Read homelessness statistics data from xlsx (converted from ods in
