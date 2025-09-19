@@ -81,8 +81,10 @@
   [dataset-name first-row-with-headers last-row-with-headers
    & {:keys [resource-file-name file-path]
       :or    {resource-file-name assessments-202503-file}}]
-  (let [raw (get (->map-of-datasets {:resource-file-name resource-file-name
-                                     :file-path file-path}) dataset-name)
+  (let [raw (if-let [ds (get (->map-of-datasets {:resource-file-name resource-file-name
+                                                 :file-path file-path}) dataset-name)]
+              ds (get (->map-of-datasets {:resource-file-name resource-file-name
+                                          :file-path file-path}) (str dataset-name "_")))
         headers-range (range (dec first-row-with-headers) last-row-with-headers)
         cols (-> raw
                  (tc/select-rows headers-range)
