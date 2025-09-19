@@ -140,85 +140,85 @@
 
 
 (def A1-data
-  (->ds "A1" 5 7))
+  (->ds "A1"))
 
 (def A2P-data
-  (->ds "A2P" 4 7))
+  (->ds "A2P"))
 
 (def A2R-data
-  (->ds "A2R" 5 7))
+  (->ds "A2R"))
 
 (def A3-data
-  (->ds "A3" 4 5))
+  (->ds "A3"))
 
 (def A4P-data
-  (->ds "A4P" 4 6))
+  (->ds "A4P"))
 
 (def A4R-data
-  (->ds "A4R" 4 6))
+  (->ds "A4R"))
 
 (def A5P-data
-  (->ds "A5P" 4 5))
+  (->ds "A5P"))
 
 (def A5R-data
-  (->ds "A5R" 4 5))
+  (->ds "A5R"))
 
 (def A6-data
-  (->ds "A6" 4 4))
+  (->ds "A6"))
 
 (def A7-data
-  (->ds "A7" 6 8))
+  (->ds "A7"))
 
 (def A8-data
-  (->ds "A8" 4 6))
+  (->ds "A8"))
 
 (def A10-data
-  (->ds "A10" 4 6))
+  (->ds "A10"))
 
 (def A12-data
-  (->ds "A12" 2 6))
+  (->ds "A12"))
 
 (def A13-data
-  (->ds "A13" 5 5))
+  (->ds "A13"))
 
 (def P1
-  (->ds "P1" 5 6))
+  (->ds "P1"))
 
 (def P2
-  (->ds "P2" 4 6))
+  (->ds "P2"))
 
 (def P3
-  (->ds "P3" 4 4))
+  (->ds "P3"))
 
 (def P5
-  (->ds "P5" 4 5))
+  (->ds "P5"))
 
 (def R1
-  (->ds "R1" 5 6))
+  (->ds "R1"))
 
 (def R2
-  (->ds "R2" 4 6))
+  (->ds "R2"))
 
 (def R3
-  (->ds "R3" 4 4))
+  (->ds "R3"))
 
 (def R5
-  (->ds "R5" 4 5))
+  (->ds "R5"))
 
 (def MD1
-  (->ds "MD1" 6 6))
+  (->ds "MD1"))
 
 (def MD2
-  (->ds "MD2" 6 7))
+  (->ds "MD2"))
 
 (def MD3
-  (->ds "MD3" 6 7))
+  (->ds "MD3"))
 
 (def TA1
-  (->ds "TA1" 6 7))
+  (->ds "TA1"))
 
 (def TA2
-  (->ds "TA2" 7 8))
+  (->ds "TA2"))
 
 (def TA3
-  (->ds "TA3" 5 7))
+  (->ds "TA3"))
