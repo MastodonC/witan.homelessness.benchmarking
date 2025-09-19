@@ -115,7 +115,7 @@
                      (map #(-> %
                                (s/replace #"\n" " ")
                                (s/replace "1,2,6" "")
-                               (s/replace #"\d$" "")
+                               ;;(s/replace #"\d$" "") ;; cuts out some numbered column headers
                                (s/replace "area5" "area")
                                (s/replace "/" "")
                                (s/replace "(000s)" "1000")
