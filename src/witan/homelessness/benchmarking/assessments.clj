@@ -64,8 +64,8 @@
 (defn ->map-of-datasets
   "Read homelessness statistics data from xlsx (converted from ods in
    LibreOffice Calc)"
-  [& {::keys [resource-file-name file-path options]
-      :or    {resource-file-name assessments-2025-file}}]
+  [& {:keys [resource-file-name file-path options]
+      :or    {resource-file-name assessments-202503-file}}]
   (with-open [in (-> (or file-path (io/resource resource-file-name))
                      io/file
                      io/input-stream)]
@@ -79,9 +79,10 @@
   "Load dataset using tab name from homelessness statistics data using the name
    of the tab and the spreadsheet row numbers where the headers exist between"
   [dataset-name first-row-with-headers last-row-with-headers
-   & {::keys [resource-file-name file-path]
-      :or    {resource-file-name assessments-2025-file}}]
-  (let [raw (get (->map-of-datasets resource-file-name file-path) dataset-name)
+   & {:keys [resource-file-name file-path]
+      :or    {resource-file-name assessments-202503-file}}]
+  (let [raw (get (->map-of-datasets {:resource-file-name resource-file-name
+                                     :file-path file-path}) dataset-name)
         headers-range (range (dec first-row-with-headers) last-row-with-headers)
         cols (-> raw
                  (tc/select-rows headers-range)
