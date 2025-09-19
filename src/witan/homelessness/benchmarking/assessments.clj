@@ -75,9 +75,10 @@
                                        :key-fn      keyword))
       (reduce (fn [m coll] (assoc m (tc/dataset-name coll) coll)) {} $))))
 
-(defn find-header-range [ds]
+(defn find-header-range [ds & {:keys [rows]
+                               :or   {rows [0]}}]
   (range 1 (-> ds
-               (tc/drop-rows 0)
+               (tc/drop-rows rows)
                (tc/add-column :row (range))
                (tc/select-rows #(string? (:column-0 %)))
                (tc/select-rows 0)
@@ -94,7 +95,9 @@
                                                  :file-path file-path}) dataset-name)]
               ds (get (->map-of-datasets {:resource-file-name resource-file-name
                                           :file-path file-path}) (str dataset-name "_")))
-        headers-range (find-header-range raw)
+        headers-range (if (= dataset-name "A13")
+                        (find-header-range raw {:rows [0 1]})
+                        (find-header-range raw))
         cols (-> raw
                  (tc/select-rows headers-range)
                  (tc/info)
