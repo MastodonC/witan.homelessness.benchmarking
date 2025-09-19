@@ -75,17 +75,26 @@
                                        :key-fn      keyword))
       (reduce (fn [m coll] (assoc m (tc/dataset-name coll) coll)) {} $))))
 
+(defn find-header-range [ds]
+  (range 1 (-> ds
+               (tc/drop-rows 0)
+               (tc/add-column :row (range))
+               (tc/select-rows #(string? (:column-0 %)))
+               (tc/select-rows 0)
+               :row
+               first
+               inc)))
+
 (defn ->ds
   "Load dataset using tab name from homelessness statistics data using the name
    of the tab and the spreadsheet row numbers where the headers exist between"
-  [dataset-name first-row-with-headers last-row-with-headers
-   & {:keys [resource-file-name file-path]
-      :or    {resource-file-name assessments-202503-file}}]
+  [dataset-name & {:keys [resource-file-name file-path]
+                   :or    {resource-file-name assessments-202503-file}}]
   (let [raw (if-let [ds (get (->map-of-datasets {:resource-file-name resource-file-name
                                                  :file-path file-path}) dataset-name)]
               ds (get (->map-of-datasets {:resource-file-name resource-file-name
                                           :file-path file-path}) (str dataset-name "_")))
-        headers-range (range (dec first-row-with-headers) last-row-with-headers)
+        headers-range (find-header-range raw)
         cols (-> raw
                  (tc/select-rows headers-range)
                  (tc/info)
@@ -120,7 +129,7 @@
                                (s/replace " " "-")
                                keyword) $))]
     (-> raw
-        (tc/drop-rows (range 0 (inc last-row-with-headers)))
+        (tc/drop-rows (range 0 (last headers-range)))
         (tc/select-columns cols)
         (tc/rename-columns (reduce #(assoc %1 (first %2) (second %2)) {} (map vector cols col-titles)))
         (tc/drop-missing :code)
