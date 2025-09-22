@@ -62,6 +62,10 @@
 (def statistical-neighbours (sn/neighbours la-name))
 (def statistical-neighbours-pred (sn/neighbours-name-pred la-name))
 
+(
+ ;; Data
+ )
+
 (def number-homeless
   "relief duty owed"
   (let [neighbours statistical-neighbours-pred]
@@ -72,6 +76,17 @@
              (tc/select-rows #((set statistical-neighbours-pred) (:name %)))))
         (tc/select-columns [:date :name :quarter :year
                             :homeless-relief-duty-owed4]))))
+
+(def number-threatened-w-homeless
+  "relief duty owed"
+  (let [neighbours statistical-neighbours-pred]
+    (-> (tc/concat
+         (-> @bass/A1
+             (tc/select-rows #(#{la-name} (:name %))))
+         (-> @bass/A1
+             (tc/select-rows #((set statistical-neighbours-pred) (:name %)))))
+        (tc/select-columns [:date :name :quarter :year
+                            :threatened-with-homelessness-within-56-days-prevention-duty-owed]))))
 
 (defn neighbour-comparison-boxplot
   [{:keys [neighbour-data la-name title y-field y-title x-field x-title max-y]
@@ -138,6 +153,21 @@
       (assoc-in [:layout :height] 375)
       (assoc-in [:layout :width] 500)))
 
+(defn plotly-total-threatened-w-homeless-neighbour-comparison
+  [la-name neighbours]
+  (-> (neighbour-comparison-boxplot
+       (let [neighbours statistical-neighbours-pred]
+         {:neighbour-data (-> number-threatened-w-homeless
+                              (tc/select-rows #(#{2024 2025} (:year %)))
+                              (tc/order-by :date))
+          :la-name la-name
+          :title (str la-name " Total Threatened with Homelessness w/Statistical Neighbours")
+          :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
+          :y-title "Count threatened w/homelessness"
+          }))
+      (assoc-in [:layout :height] 375)
+      (assoc-in [:layout :width] 500)))
+
 (
 ;;; Deck
  )
@@ -185,3 +215,22 @@
              la-name statistical-neighbours-pred)))
 
 (mc-logo)
+
+;; ---
+;; ## Total threatened with homelessness
+(clerk/row {::clerk/width :full}
+           (clerk/vl {:data {:values (-> number-threatened-w-homeless
+                                         (tc/select-rows #(#{la-name} (:name %)))
+                                         (tc/order-by :date)
+                                         (tc/rows :as-maps))}
+                      :mark {:type "line"}
+                      :encoding {:x {:field :date :type "temporal"}
+                                 :y {:field :threatened-with-homelessness-within-56-days-prevention-duty-owed
+                                     :type "quantitative" :title "Count threatened w/homelessness"}
+                                 :color {:field :name :type "nominal"}}})
+           (clerk/plotly
+            (plotly-total-threatened-w-homeless-neighbour-comparison
+             la-name statistical-neighbours-pred)))
+
+(mc-logo)
+
