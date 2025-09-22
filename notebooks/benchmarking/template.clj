@@ -174,11 +174,10 @@
 ;; ## Total experiencing homelessness
 (clerk/row {::clerk/width :full}
            (clerk/vl {:data {:values (-> number-homeless
-                                         (tc/map-columns :q [:date] str)
                                          (tc/order-by :date)
                                          (tc/rows :as-maps))}
                       :mark {:type "line"}
-                      :encoding {:x {:field :q :type "temporal"}
+                      :encoding {:x {:field :date :type "temporal"}
                                  :y {:field :homeless-relief-duty-owed4 :type "quantitative"}
                                  :color {:field :name :type "nominal"}}})
            (clerk/plotly
