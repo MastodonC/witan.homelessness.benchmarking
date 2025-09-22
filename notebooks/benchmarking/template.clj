@@ -149,9 +149,8 @@
 ;;; Title Page
   {::clerk/width :full}
   [:div.max-w-screen-2xl.font-sans
-   #_[:h1.text-6xl.font-extrabold (format "Benchmarking results for %s" la-name)]
    [:h1.text-6xl.font-extrabold.mb-12
-    (format "Benchmarking results for %s" la-name)]
+    (format "Homelessness Benchmarking Results for %s" la-name)]
    [:p.text-4xl.font-bold.italic "Presented by Mastodon C"]
    [:p.text-3xl "Use ⬅️➡️ keys to navigate and ESC to see an overview."]]))
 
