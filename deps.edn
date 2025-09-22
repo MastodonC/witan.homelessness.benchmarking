@@ -1,9 +1,10 @@
 {:paths ["src" "resources" "notebooks"]
- :deps  {org.clojure/clojure                   {:mvn/version "1.12.0"}
-         io.github.nextjournal/clerk           {:mvn/version "0.18.1142"}
-         io.github.nextjournal/clerk-slideshow {:git/sha "11a83fea564da04b9d17734f2031a4921d917893"}
-         com.github.mastodonc/witan.population {:git/sha "0dcaa57f75fa93f038dcc53ec4c724627d1eb0cf"}
-         generateme/fastmath                   {:mvn/version "2.4.0"}
-         scicloj/tablecloth                    {:mvn/version "7.059"}
-         org.dhatim/fastexcel-reader {:mvn/version "0.12.8"
-                                      :exclusions [org.apache.poi/poi-ooxml]}}}
+ :deps  {org.clojure/clojure                       {:mvn/version "1.12.0"}
+         io.github.nextjournal/clerk               {:mvn/version "0.18.1142"}
+         io.github.nextjournal/clerk-slideshow     {:git/sha "11a83fea564da04b9d17734f2031a4921d917893"}
+         com.github.mastodonc/witan.population     {:git/sha "0dcaa57f75fa93f038dcc53ec4c724627d1eb0cf"}
+         generateme/fastmath                       {:mvn/version "2.4.0"}
+         scicloj/tablecloth                        {:mvn/version "7.059"}
+         org.dhatim/fastexcel-reader               {:mvn/version "0.12.8"
+                                                    :exclusions [org.apache.poi/poi-ooxml]}
+         com.github.mastodonc/witan.send.adroddiad {:sha         "95b81664f684225ce4c1ec5ba517913a4a50209f"}}}
