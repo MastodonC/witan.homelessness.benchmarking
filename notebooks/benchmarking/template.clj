@@ -173,6 +173,7 @@
 ;; ## Total experiencing homelessness
 (clerk/row {::clerk/width :full}
            (clerk/vl {:data {:values (-> number-homeless
+                                         (tc/select-rows #(#{la-name} (:name %)))
                                          (tc/order-by :date)
                                          (tc/rows :as-maps))}
                       :mark {:type "line"}
