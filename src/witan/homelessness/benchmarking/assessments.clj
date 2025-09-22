@@ -5,43 +5,82 @@
    [tablecloth.api :as tc]
    [tech.v3.libs.fastexcel :as fst]))
 
-(def assessments-202503-file "./homelessness-statistics/Detailed_LA_202503.xlsx")
+(def assessments-202503 {:resource-file-name "./homelessness-statistics/Detailed_LA_202503.xlsx"
+                         :quarter "Jan-Mar"
+                         :year 2025})
+;; This is Jan - Mar 2025, hence the "03"
 
-(def assessments-202412-file "./homelessness-statistics/Detailed_LA_202412.xlsx")
+(def assessments-202412 {:resource-file-name "./homelessness-statistics/Detailed_LA_202412.xlsx"
+                         :quarter "Oct-Dec"
+                         :year 2024})
 
-(def assessments-202409-file "./homelessness-statistics/Detailed_LA_202409.xlsx")
+(def assessments-202409 {:resource-file-name "./homelessness-statistics/Detailed_LA_202409.xlsx"
+                         :quarter "Jul-Sep"
+                         :year 2024})
 
-(def assessments-202406-file "./homelessness-statistics/Detailed_LA_202406_fix.xlsx")
+(def assessments-202406 {:resource-file-name "./homelessness-statistics/Detailed_LA_202406_fix.xlsx"
+                         :quarter "Apr-Jun"
+                         :year 2024})
 
-(def assessments-202403-file "./homelessness-statistics/Detailed_LA_202403.xlsx")
+(def assessments-202403 {:resource-file-name "./homelessness-statistics/Detailed_LA_202403.xlsx"
+                         :quarter "Jan-Mar"
+                         :year 2024})
 
-(def assessments-202312-file "./homelessness-statistics/Detailed_LA_202312.xlsx")
+(def assessments-202312 {:resource-file-name "./homelessness-statistics/Detailed_LA_202312.xlsx"
+                         :quarter "Oct-Dec"
+                         :year 2023})
 
-(def assessments-202309-file "./homelessness-statistics/Detailed_LA_202309_fixed.xlsx")
+(def assessments-202309 {:resource-file-name "./homelessness-statistics/Detailed_LA_202309_fixed.xlsx"
+                         :quarter "Jul-Sep"
+                         :year 2023})
 
-(def assessments-202306-file "./homelessness-statistics/Detailed_LA_202306_all_dropdowns_fix.xlsx")
+(def assessments-202306 {:resource-file-name "./homelessness-statistics/Detailed_LA_202306_all_dropdowns_fix.xlsx"
+                         :quarter "Apr-Jun"
+                         :year 2023})
 
-(def assessments-202303-file "./homelessness-statistics/Detailed_LA_202303.xlsx")
+(def assessments-202303 {:resource-file-name "./homelessness-statistics/Detailed_LA_202303.xlsx"
+                         :quarter "Jan-Dec"
+                         :year 2023})
 
-(def assessments-202212-file "./homelessness-statistics/Detailed_LA_202212.xlsx")
+(def assessments-202212 {:resource-file-name "./homelessness-statistics/Detailed_LA_202212.xlsx"
+                         :quarter "Oct-Dec"
+                         :year 2022})
 
-(def assessments-202209-file "./homelessness-statistics/Detailed_LA_202209.xlsx")
+(def assessments-202209 {:resource-file-name "./homelessness-statistics/Detailed_LA_202209.xlsx"
+                         :quarter "Jul-Sep"
+                         :year 2022})
 
-(def assessments-202206-file "./homelessness-statistics/Detailed_LA_202206.xlsx")
+(def assessments-202206 {:resource-file-name "./homelessness-statistics/Detailed_LA_202206.xlsx"
+                         :quarter "Apr-Jun"
+                         :year 2022})
 
-(def assessments-202203-file "./homelessness-statistics/Detailed_LA_202203.xlsx")
+(def assessments-202203 {:resource-file-name "./homelessness-statistics/Detailed_LA_202203.xlsx"
+                         :quarter "Jan-Mar"
+                         :year 2022})
 
-(def assessments-202112-file "./homelessness-statistics/DetailedLA_202112.xlsx")
+(def assessments-202112 {:resource-file-name "./homelessness-statistics/DetailedLA_202112.xlsx"
+                         :quarter "Oct-Dec"
+                         :year 2021})
 
-(def assessments-202109-file "./homelessness-statistics/DetailedLA_202109_fixed.xlsx")
+(def assessments-202109 {:resource-file-name "./homelessness-statistics/DetailedLA_202109_fixed.xlsx"
+                         :quarter "Jul-Sep"
+                         :year 2021})
 
-(def assessments-202106-file "./homelessness-statistics/DetailedLA_202106.xlsx")
+(def assessments-202106 {:resource-file-name "./homelessness-statistics/DetailedLA_202106.xlsx"
+                         :quarter "Apr-Jun"
+                         :year 2021})
 
-(def assessments-202103-file "./homelessness-statistics/DetailedLA_202103_revised.xlsx")
+(def assessments-202103 {:resource-file-name "./homelessness-statistics/DetailedLA_202103_revised.xlsx"
+                         :quarter "Jan-Mar"
+                         :year 2021})
 
-(def assessments-202012-file "./homelessness-statistics/DetailedLA_202012.xlsx")
+(def assessments-202012 {:resource-file-name "./homelessness-statistics/DetailedLA_202012.xlsx"
+                         :quarter "Oct-Dec"
+                         :year 2020})
 
-(def assessments-202009-file "./homelessness-statistics/DetailedLA_202009_REVISED.xlsx")
+(def assessments-202009 {:resource-file-name "./homelessness-statistics/DetailedLA_202009_REVISED.xlsx"
+                         :quarter "Jul-Sep"
+                         :year 2020})
 ;; prior to this date the returns are less consistent in terms of the tables included
 ;; there was likely a development process as what was actually useful was ascertained
 
