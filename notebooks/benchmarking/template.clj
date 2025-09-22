@@ -124,7 +124,7 @@
               :displayLogo false}}))
 
 (defn plotly-total-homeless-neighbour-comparison
-  [la-name neighbours title new-plans-by-age]
+  [la-name neighbours]
   (-> (neighbour-comparison-boxplot
        (let [neighbours statistical-neighbours-pred]
          {:neighbour-data (-> number-homeless
@@ -183,4 +183,4 @@
                                  :color {:field :name :type "nominal"}}})
            (clerk/plotly
             (plotly-total-homeless-neighbour-comparison
-             la-name statistical-neighbours-pred "" number-homeless)))
+             la-name statistical-neighbours-pred)))
