@@ -114,7 +114,7 @@
                     ([acc x]
                      (-> acc
                          (update-in [(x-field x) :y] conj (y-field x))
-                         (update-in [(x-field x) :text] conj (:la_name x)))))
+                         (update-in [(x-field x) :text] conj (:name x)))))
                   (-> neighbour-data
                       (tc/drop-rows #(#{la-name} (:name %)))
                       (tc/rows :as-maps)))]
