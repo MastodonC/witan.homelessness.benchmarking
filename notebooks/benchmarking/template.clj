@@ -1,5 +1,5 @@
 ^{:nextjournal.clerk/toc true}
-(ns benchmarking
+(ns benchmarking.template
   {:nextjournal.clerk/visibility {:code   :hide
                                   :result :hide}
    :nextjournal.clerk/page-size            nil
