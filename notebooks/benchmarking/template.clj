@@ -78,7 +78,7 @@
                             :homeless-relief-duty-owed4]))))
 
 (def number-threatened-w-homeless
-  "relief duty owed"
+  "prevention duty owed"
   (let [neighbours statistical-neighbours-pred]
     (-> (tc/concat
          (-> @bass/A1
