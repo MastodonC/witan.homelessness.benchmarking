@@ -127,7 +127,7 @@
               :xaxis {:title x-title}
               :yaxis {:rangemode "tozero" :title y-title :range (when max-y [0 max-y])}
               :height 600
-              :width 1400
+              :width 1000
               :showlegend false}
      :config {:displayModeBar false
               :displayLogo false}}))
@@ -143,9 +143,7 @@
           :title (str la-name " Total Experiencing Homelessness w/Statistical Neighbours")
           :y-field :homeless-relief-duty-owed4
           :y-title "Count experiencing homelessness"
-          }))
-      (assoc-in [:layout :height] 375)
-      (assoc-in [:layout :width] 500)))
+          }))))
 
 (defn plotly-total-threatened-w-homeless-neighbour-comparison
   [la-name neighbours]
@@ -158,9 +156,8 @@
           :title (str la-name " Total Threatened with Homelessness w/Statistical Neighbours")
           :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
           :y-title "Count threatened w/homelessness"
-          }))
-      (assoc-in [:layout :height] 375)
-      (assoc-in [:layout :width] 500)))
+          }))))
+
 
 (
 ;;; Deck
