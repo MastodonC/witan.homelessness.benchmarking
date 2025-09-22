@@ -1,10 +1,7 @@
 ^{:nextjournal.clerk/toc true}
 (ns benchmarking.template
   {:nextjournal.clerk/visibility {:code   :hide
-                                  :result :hide}
-   :nextjournal.clerk/page-size            nil
-   :nextjournal.clerk/auto-expand-results? true
-   :nextjournal.clerk/budget               nil}
+                                  :result :hide}}
   (:require [clojure.string :as str]
             [clojure.java.io :as io]
             [nextjournal.clerk :as clerk]
@@ -82,6 +79,14 @@
         (tc/select-columns [:date :name :quarter :year
                             :threatened-with-homelessness-within-56-days-prevention-duty-owed]))))
 
+(def number-homeless-per-000
+  "relief duty owed per 000s"
+  (let [neighbours statistical-neighbours-pred]
+    (-> @bass/A1
+        (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
+        (tc/select-columns [:date :name :quarter :year
+                            :households-assessed-as-homeless-per-1000]))))
+
 (defn neighbour-comparison-boxplot
   [{:keys [neighbour-data la-name title y-field y-title x-field x-title max-y]
     :or {x-field :date
@@ -158,6 +163,18 @@
           :y-title "Count threatened w/homelessness"
           }))))
 
+(defn plotly-total-homeless-per-000-neighbour-comparison
+  [la-name neighbours]
+  (-> (neighbour-comparison-boxplot
+       (let [neighbours statistical-neighbours-pred]
+         {:neighbour-data (-> number-homeless-per-000
+                              (tc/select-rows #(#{2024 2025} (:year %)))
+                              (tc/order-by :date))
+          :la-name la-name
+          :title (str la-name " Total Experiencing Homelessness per 1000 w/Statistical Neighbours")
+          :y-field :households-assessed-as-homeless-per-1000
+          :y-title "Count experiencing homelessness per 1000"
+          }))))
 
 (
 ;;; Deck
@@ -222,6 +239,24 @@
                                  :color {:field :name :type "nominal"}}})
            (clerk/plotly
             (plotly-total-threatened-w-homeless-neighbour-comparison
+             la-name statistical-neighbours-pred)))
+
+(mc-logo)
+
+;; ---
+;; ## Total homelessness per 1000
+(clerk/row {::clerk/width :full}
+           (clerk/vl {:data {:values (-> number-homeless-per-000
+                                         (tc/select-rows #(#{la-name} (:name %)))
+                                         (tc/order-by :date)
+                                         (tc/rows :as-maps))}
+                      :mark {:type "line"}
+                      :encoding {:x {:field :date :type "temporal" :title "Quarter"}
+                                 :y {:field :households-assessed-as-homeless-per-1000
+                                     :type "quantitative" :title "Count of homeless relief owed per 1000"}
+                                 :color {:field :name :type "nominal"}}})
+           (clerk/plotly
+            (plotly-total-homeless-per-000-neighbour-comparison
              la-name statistical-neighbours-pred)))
 
 (mc-logo)
