@@ -198,8 +198,9 @@
                                          (tc/order-by :date)
                                          (tc/rows :as-maps))}
                       :mark {:type "line"}
-                      :encoding {:x {:field :date :type "temporal"}
-                                 :y {:field :homeless-relief-duty-owed4 :type "quantitative"}
+                      :encoding {:x {:field :date :type "temporal" :title "Quarter"}
+                                 :y {:field :homeless-relief-duty-owed4 :type "quantitative"
+                                     :title "Count of homeless relief duty owed"}
                                  :color {:field :name :type "nominal"}}})
            (clerk/plotly
             (plotly-total-homeless-neighbour-comparison
@@ -215,9 +216,9 @@
                                          (tc/order-by :date)
                                          (tc/rows :as-maps))}
                       :mark {:type "line"}
-                      :encoding {:x {:field :date :type "temporal"}
+                      :encoding {:x {:field :date :type "temporal" :title "Quarter"}
                                  :y {:field :threatened-with-homelessness-within-56-days-prevention-duty-owed
-                                     :type "quantitative" :title "Count threatened w/homelessness"}
+                                     :type "quantitative" :title "Count of homeless prevention owed"}
                                  :color {:field :name :type "nominal"}}})
            (clerk/plotly
             (plotly-total-threatened-w-homeless-neighbour-comparison
