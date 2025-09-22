@@ -209,7 +209,7 @@
     (apply tc/concat-copying $)
     (tc/map-columns $ :date [:quarter :year]
                     (fn [quarter year]
-                      (str "01-" quarter "-" year)))))
+                      (str year "-" quarter "-01")))))
 
 
 (def A1
