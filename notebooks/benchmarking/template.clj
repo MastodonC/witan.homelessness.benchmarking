@@ -69,22 +69,16 @@
 (def number-homeless
   "relief duty owed"
   (let [neighbours statistical-neighbours-pred]
-    (-> (tc/concat
-         (-> @bass/A1
-             (tc/select-rows #(#{la-name} (:name %))))
-         (-> @bass/A1
-             (tc/select-rows #((set statistical-neighbours-pred) (:name %)))))
+    (-> @bass/A1
+        (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :homeless-relief-duty-owed4]))))
 
 (def number-threatened-w-homeless
   "prevention duty owed"
   (let [neighbours statistical-neighbours-pred]
-    (-> (tc/concat
-         (-> @bass/A1
-             (tc/select-rows #(#{la-name} (:name %))))
-         (-> @bass/A1
-             (tc/select-rows #((set statistical-neighbours-pred) (:name %)))))
+    (-> @bass/A1
+        (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :threatened-with-homelessness-within-56-days-prevention-duty-owed]))))
 
