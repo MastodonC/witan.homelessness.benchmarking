@@ -201,87 +201,132 @@
         (tc/drop-missing :code)
         (tc/select-rows #(s/starts-with? (:code %) "E")))))
 
+(defn concat-ds [dataset-name]
+  (->> assessments-data
+       (map #(-> (sheet->ds dataset-name {:resource-file-name (:resource-file-name %)})
+                 (tc/add-columns {:quarter (:quarter %)
+                                  :year (:year %)})))
+       (apply tc/concat-copying)))
 
-(def A1-data
-  (->ds "A1"))
 
-(def A2P-data
-  (->ds "A2P"))
+(def A1
+  (delay
+    (concat-ds "A1")))
 
-(def A2R-data
-  (->ds "A2R"))
+(def A2P
+  (delay
+    (concat-ds "A2P")))
 
-(def A3-data
-  (->ds "A3"))
+(def A2R
+  (delay
+    (concat-ds "A2R")))
 
-(def A4P-data
-  (->ds "A4P"))
+(def A3
+  (delay
+    (concat-ds "A3")))
 
-(def A4R-data
-  (->ds "A4R"))
+(def A4P
+  (delay
+    (concat-ds "A4P")))
 
-(def A5P-data
-  (->ds "A5P"))
+(def A4R
+  (delay
+    (concat-ds "A4R")))
 
-(def A5R-data
-  (->ds "A5R"))
+(def A5P
+  (delay
+    (concat-ds "A5P")))
 
-(def A6-data
-  (->ds "A6"))
+(def A5R
+  (delay
+    (concat-ds "A5R")))
 
-(def A7-data
-  (->ds "A7"))
+(def A6
+  (delay
+    (concat-ds "A6")))
 
-(def A8-data
-  (->ds "A8"))
+(def A7
+  (delay
+    (concat-ds "A7")))
 
-(def A10-data
-  (->ds "A10"))
+(def A8
+  (delay
+    (concat-ds "A8")))
 
-(def A12-data
-  (->ds "A12"))
+(def A10
+  (delay
+    (concat-ds "A10")))
 
-(def A13-data
-  (->ds "A13"))
+(def A12
+  (delay
+    (concat-ds "A12")))
+
+(def A13
+  (delay
+    (concat-ds "A13")))
 
 (def P1
-  (->ds "P1"))
+  (delay
+    (concat-ds "P1")))
 
 (def P2
-  (->ds "P2"))
+  (delay
+    (concat-ds "P2")))
 
 (def P3
-  (->ds "P3"))
+  (delay
+    (concat-ds "P3")))
 
 (def P5
-  (->ds "P5"))
+  (delay
+    (concat-ds "P5")))
 
 (def R1
-  (->ds "R1"))
+  (delay
+    (concat-ds "R1")))
 
 (def R2
-  (->ds "R2"))
+  (delay
+    (concat-ds "R2")))
 
 (def R3
-  (->ds "R3"))
+  (delay
+    (concat-ds "R3")))
 
 (def R5
-  (->ds "R5"))
+  (delay
+    (concat-ds "R5")))
 
 (def MD1
-  (->ds "MD1"))
+  (delay
+    (concat-ds "MD1")))
 
 (def MD2
-  (->ds "MD2"))
+  (delay
+    (concat-ds "MD2")))
 
 (def MD3
-  (->ds "MD3"))
+  (delay
+    (concat-ds "MD3")))
 
 (def TA1
-  (->ds "TA1"))
+  (delay
+    (concat-ds "TA1")))
 
 (def TA2
-  (->ds "TA2"))
+  (delay
+    (concat-ds "TA2")))
 
 (def TA3
-  (->ds "TA3"))
+  (delay
+    (concat-ds "TA3")))
+
+(comment
+
+  (-> @A1
+      (tc/select-rows #(#{"E09000007"} (:code %)))
+      (tc/select-columns [:year :quarter
+                          :homeless-relief-duty-owed4])
+      )
+
+  )
