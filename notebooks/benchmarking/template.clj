@@ -45,12 +45,12 @@
 
   )
 
-(def mc-logo-url "https://www.mastodonc.com/wp-content/themes/MastodonC-2018/dist/images/logo_mastodonc.png")
+(def mc-logo-file (io/resource "logo_mastodonc.png"))
 
 (defn mc-logo []
   (clerk/html
    {::clerk/width :full}
-   [:div.h-full.max-h-full.bottom-0.-right-12.absolute [:img {:src mc-logo-url}]]))
+   [:div.h-full.max-h-full.bottom-0.-right-12.absolute (clerk/image mc-logo-file)]))
 
 (clerk/add-viewers! [slideshow/viewer])
 
@@ -183,3 +183,5 @@
            (clerk/plotly
             (plotly-total-homeless-neighbour-comparison
              la-name statistical-neighbours-pred)))
+
+(mc-logo)
