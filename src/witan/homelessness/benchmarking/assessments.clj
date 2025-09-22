@@ -42,6 +42,8 @@
 (def assessments-202012-file "./homelessness-statistics/DetailedLA_202012.xlsx")
 
 (def assessments-202009-file "./homelessness-statistics/DetailedLA_202009_REVISED.xlsx")
+;; prior to this date the returns are less consistent in terms of the tables included
+;; there was likely a development process as what was actually useful was ascertained
 
 (def assessments-202006-file "./homelessness-statistics/DetailedLA_202006.xlsx")
 
