@@ -102,6 +102,28 @@
 
 (def assessments-201806-file "./homelessness-statistics/DetailedLA_201806.xlsx")
 
+(def assessments-data
+  "not including data prior to June 2020"
+  [assessments-202503
+   assessments-202412
+   assessments-202409
+   assessments-202406
+   assessments-202403
+   assessments-202312
+   assessments-202309
+   assessments-202306
+   assessments-202303
+   assessments-202212
+   assessments-202209
+   assessments-202206
+   assessments-202203
+   assessments-202112
+   assessments-202109
+   assessments-202106
+   assessments-202103
+   assessments-202012
+   assessments-202009])
+
 (defn ->map-of-datasets
   "Read homelessness statistics data from xlsx (converted from ods in
    LibreOffice Calc)"
