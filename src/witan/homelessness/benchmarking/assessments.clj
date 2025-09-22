@@ -202,11 +202,14 @@
         (tc/select-rows #(s/starts-with? (:code %) "E")))))
 
 (defn concat-ds [dataset-name]
-  (->> assessments-data
-       (map #(-> (sheet->ds dataset-name {:resource-file-name (:resource-file-name %)})
-                 (tc/add-columns {:quarter (:quarter %)
-                                  :year (:year %)})))
-       (apply tc/concat-copying)))
+  (as-> assessments-data $
+    (map #(-> (sheet->ds dataset-name {:resource-file-name (:resource-file-name %)})
+              (tc/add-columns {:quarter (:quarter %)
+                               :year (:year %)})) $)
+    (apply tc/concat-copying $)
+    (tc/map-columns $ :date [:quarter :year]
+                    (fn [quarter year]
+                      (str "01-" quarter "-" year)))))
 
 
 (def A1
