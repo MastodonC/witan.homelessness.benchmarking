@@ -149,7 +149,7 @@
                first
                inc)))
 
-(defn ->ds
+(defn sheet->ds
   "Load dataset using tab name from homelessness statistics data using the name
    of the tab and the spreadsheet row numbers where the headers exist between"
   [dataset-name & {:keys [resource-file-name file-path]
