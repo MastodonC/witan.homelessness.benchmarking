@@ -128,7 +128,7 @@
   "Read homelessness statistics data from xlsx (converted from ods in
    LibreOffice Calc)"
   [& {:keys [resource-file-name file-path options]
-      :or    {resource-file-name assessments-202503-file}}]
+      :or    {resource-file-name assessments-202503}}]
   (with-open [in (-> (or file-path (io/resource resource-file-name))
                      io/file
                      io/input-stream)]
@@ -153,7 +153,7 @@
   "Load dataset using tab name from homelessness statistics data using the name
    of the tab and the spreadsheet row numbers where the headers exist between"
   [dataset-name & {:keys [resource-file-name file-path]
-                   :or    {resource-file-name assessments-202503-file}}]
+                   :or    {resource-file-name assessments-202503}}]
   (let [raw (if-let [ds (get (->map-of-datasets {:resource-file-name resource-file-name
                                                  :file-path file-path}) dataset-name)]
               ds (get (->map-of-datasets {:resource-file-name resource-file-name
