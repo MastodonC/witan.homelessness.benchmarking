@@ -242,6 +242,17 @@
   (let [neighbours statistical-neighbours-pred]
     (-> @bass/A2P
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
+        (tc/map-columns :other-reasons--not-known
+                        [:other-reasons--not-known
+                         :other-reasons--not-known5]
+                        (fn [h5 h6]
+                          (cond
+                            h6
+                            h6
+                            h5
+                            h5
+                            :else
+                            nil)))
         (tc/select-columns [:date :name :quarter :year
                             :other-reasons--not-known]))))
 
