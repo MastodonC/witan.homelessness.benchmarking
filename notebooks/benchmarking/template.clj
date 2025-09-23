@@ -648,5 +648,6 @@
 (comment
   ;; TODO
   ;; Reasons for threatened homelessness between LAs
+  ;; how do those threatened with homelessness numbers compare to those who are experienceing homelessness within reason facing homelessness
   ;; Reasons for homelessness within an LA across time change
   )
