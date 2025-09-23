@@ -98,7 +98,7 @@
 (def total-homeless-end-of-ast
   "End of ensured shorthold private rented tenancy (AST)"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :total-end--of-ast]))))
@@ -106,7 +106,7 @@
 (def total-homeless-end-of-non-ast
   "End of ensured non-AST private rented tenancy"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :end-of-non-ast-private-rented-tenancy]))))
@@ -114,7 +114,7 @@
 (def total-homeless-family-friends
   "Family or friends no longer willing or able to accommodate"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :family-or-friends-no-longer-willing-or-able-to-accommodate]))))
@@ -122,7 +122,7 @@
 (def total-homeless-non-violent-breakdown-w-partner
   "Non-violent relationship breakdown with partner"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :non-violent-relationship-breakdown-with-partner]))))
@@ -130,7 +130,7 @@
 (def total-homeless-domestic-abuse
   "Total Domestic abuse"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :total-domestic-abuse]))))
@@ -138,7 +138,7 @@
 (def total-homeless-violence-harassment
   "Other violence or harrassment"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :other-violence-or-harrassment]))))
@@ -146,7 +146,7 @@
 (def total-homeless-end-of-social-tenancy
   "End of social rented tenancy"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :total-end-of-social-rented-tenancy]))))
@@ -154,7 +154,7 @@
 (def total-homeless-eviction-supported-housing
   "Eviction from supported housing"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :total-evicted-from-supported-housing]))))
@@ -162,7 +162,7 @@
 (def total-homeless-custody
   "Departure from custody/prison"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :custody]))))
@@ -170,7 +170,7 @@
 (def total-homeless-psychiatric-hospital
   "Departure from psychiatric hospital"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :hospital-psychiatric]))))
@@ -178,7 +178,7 @@
 (def total-homeless-general-hospital
   "Departure from general hospital"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :hospital-general]))))
@@ -186,7 +186,7 @@
 (def total-homeless-lac
   "Departure from Looked After Child (LAC) placement"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :looked-after-child-placement]))))
@@ -194,7 +194,7 @@
 (def total-homeless-asylum
   "Required to leave accommodation provided by Home Office as asylum support"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
                             :required-to-leave-accommodation-provided-by-home-office-as-asylum-support]))))
@@ -202,7 +202,7 @@
 (def total-homeless-disability-ill
   "Home no longer suitable - disability / ill health"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/map-columns :home-no-longer-suitable-disability-ill-health
                         [:home-no-longer-suitable-disability--ill-health-5
@@ -221,7 +221,7 @@
 (def total-homeless-resettlement
   "Loss of placement or sponsorship provided through a resettlement scheme"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/map-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
                         [:loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
@@ -240,7 +240,7 @@
 (def total-homeless-other
   "Other reasons / not known5"
   (let [neighbours statistical-neighbours-pred]
-    (-> @bass/A2P
+    (-> @bass/A2R
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/map-columns :other-reasons--not-known
                         [:other-reasons--not-known
