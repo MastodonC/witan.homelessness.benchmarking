@@ -808,7 +808,10 @@
 {::clerk/visibility {:result :hide}}
 
 (comment
-  ;; TODO
+  ;; # TODO
+  ;; ## Analysis
   ;; Reasons for threatened homelessness between LAs
   ;; how do those threatened with homelessness numbers compare to those who are experienceing homelessness within reason facing homelessness
+  ;; ## Processing
+  ;; Read in files once, rather than reading each file every time a new ds is made (e.g. A1 ds)
   )
