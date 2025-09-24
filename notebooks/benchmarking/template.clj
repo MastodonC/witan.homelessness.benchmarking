@@ -556,7 +556,7 @@
 (mc-logo)
 
 ;; ---
-;; ## Total experiencing homelessness due to non-violent relationshio breakdown with partner
+;; ## Total experiencing homelessness due to non-violent relationship breakdown with partner
 (clerk/row {::clerk/width :full}
            (clerk/vl (single-line-chart {:ds total-homeless-non-violent-breakdown-w-partner
                                          :y-field :non-violent-relationship-breakdown-with-partner
