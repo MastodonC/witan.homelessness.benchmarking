@@ -791,20 +791,6 @@
 (mc-logo)
 
 ;; ---
-;; ## Comparison of summarised reasons for homelessness
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data summarised-reason-for-homelessness
-                          :title la-name
-                          :x-field :reason
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
 ;; ## Comparison of specific reasons for homelessness
 (clerk/row
  {::clerk/width :full}
