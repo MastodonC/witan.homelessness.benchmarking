@@ -465,6 +465,49 @@
                                  :other-reasons--not-known])) (:reason %)))
       (tc/drop-rows #(#{:total-owed-a-relief-duty1 :date} (:reason %)))))
 
+(def la-reasons-&-threatened-with-homelessness
+  (-> @bass/A2P
+      (tc/select-rows #(#{la-name} (:name %)))
+      (tc/order-by :date)
+      (tc/map-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                      [:loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                       :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6]
+                      (fn [h5 h6]
+                        (cond
+                          h6
+                          h6
+                          h5
+                          h5
+                          :else
+                          nil)))
+      (tc/map-columns :home-no-longer-suitable-disability-ill-health
+                      [:home-no-longer-suitable-disability--ill-health-5
+                       :home-no-longer-suitable-disability--ill-health-6]
+                      (fn [h5 h6]
+                        (cond
+                          h6
+                          h6
+                          h5
+                          h5
+                          :else
+                          nil)))
+      (tc/map-columns :other-reasons--not-known
+                      [:other-reasons--not-known
+                       :other-reasons--not-known5]
+                      (fn [h5 h6]
+                        (cond
+                          h6
+                          h6
+                          h5
+                          h5
+                          :else
+                          nil)))
+      (tc/pivot->longer (complement #{:code :name :quarter :year}))
+      (tc/rename-columns {:$column :reason :$value :count})
+      (tc/drop-rows #(#{:date :total-owed-a-relief-duty1} (:reason %)))
+      (tc/add-column :duty "prevention")
+      (tc/concat (tc/add-column la-reasons-for-homelessness :duty "relief"))))
+
 (
  ;; Charts
  )
@@ -1156,8 +1199,6 @@
 
 (mc-logo)
 
-
-
 ;; ---
 ;; ## Comparison of all reasons for homelessness
 (clerk/row
@@ -1194,6 +1235,244 @@
   (la-comparison-boxplot {:la-data specific-reasons-for-homelessness
                           :title la-name
                           :x-field :reason
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to end of AST
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:total-end--of-ast} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to end of AST
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:total-end--of-ast} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to end of non-AST
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:end-of-non-ast-private-rented-tenancy} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to family or friends no longer willing or able to accomodate
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:family-or-friends-no-longer-willing-or-able-to-accommodate} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to non-violent relationship breakdown with partner
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:non-violent-relationship-breakdown-with-partner} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to domestic abuse
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:total-domestic-abuse} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to violence or harassment
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:other-violence-or-harrassment} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to end of social rented tenancy
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:total-end-of-social-rented-tenancy} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to eviction from supported housing
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:total-evicted-from-supported-housing} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to departure from custody
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:custody} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to departure from psychiatric hospital
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:hospital-psychiatric} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to departure from general hospital
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:hospital-general} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to departure from LAC placement
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:looked-after-child-placement} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to being required to leave accomodation provided by HO as asylum support
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:required-to-leave-accommodation-provided-by-home-office-as-asylum-support} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to disability/ill health
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:home-no-longer-suitable-disability-ill-health} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to loss of placement or sponsorship through a resettlement scheme
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme} (:reason %)))
+                          :title la-name
+                          :x-field :duty
+                          ;;:x-title "Reason for experiencing homelessness"
+                          :y-field :count
+                          :y-title "Number experiencing homelessness"})))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to other/unknown reasons
+(clerk/row
+ {::clerk/width :full}
+ (clerk/plotly
+  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:other-reasons--not-known} (:reason %)))
+                          :title la-name
+                          :x-field :duty
                           ;;:x-title "Reason for experiencing homelessness"
                           :y-field :count
                           :y-title "Number experiencing homelessness"})))
