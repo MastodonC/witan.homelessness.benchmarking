@@ -295,7 +295,7 @@
                           nil)))
       (tc/pivot->longer (complement #{:code :name :quarter :year}))
       (tc/rename-columns {:$column :reason :$value :count})
-      (tc/drop-rows #(#{:date} (:reason %)))))
+      (tc/drop-rows #(#{:date :total-owed-a-relief-duty1} (:reason %)))))
 
 (def summarised-reason-for-homelessness-keys
   #{:total-end--of-ast
