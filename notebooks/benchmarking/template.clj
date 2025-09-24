@@ -13,7 +13,7 @@
             [witan.homelessness.benchmarking.statistical-neighbours :as sn]
             [clojure.string :as s]))
 
-(def la-name "Camden")
+(def la-name "Waltham Forest")
 
 (def out-dir "doc/")
 
