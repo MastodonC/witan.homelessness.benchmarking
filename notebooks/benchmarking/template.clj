@@ -676,7 +676,7 @@
            (clerk/plotly
             (neighbour-comparison-boxplot {:neighbour-data total-homeless-general-hospital
                                            :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to departure from geeneral hospital w/Statistical Neighbours")
+                                           :title (str la-name " Total Experiencing Homelessness due to departure from general hospital w/Statistical Neighbours")
                                            :y-field :hospital-general
                                            :y-title "Count experiencing homelessness"
                                            })))
