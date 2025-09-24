@@ -805,6 +805,7 @@
 
 (mc-logo)
 
+{::clerk/visibility {:result :hide}}
 
 (comment
   ;; TODO
