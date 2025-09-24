@@ -453,14 +453,16 @@
 
 (def specific-reasons-for-homelessness
   (-> la-reasons-for-homelessness
-      (tc/select-rows #((complement (apply disj summarised-reason-for-homelessness-keys [:end-of-non-ast-private-rented-tenancy
-                                                                                         :family-or-friends-no-longer-willing-or-able-to-accommodate
-                                                                                         :non-violent-relationship-breakdown-with-partner
-                                                                                         :other-violence-or-harrassment
-                                                                                         :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
-                                                                                         :home-no-longer-suitable-disability--ill-health
-                                                                                         :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                                                                         :other-reasons--not-known])) (:reason %)))
+      (tc/select-rows #((complement
+                         (apply disj summarised-reason-for-homelessness-keys
+                                [:end-of-non-ast-private-rented-tenancy
+                                 :family-or-friends-no-longer-willing-or-able-to-accommodate
+                                 :non-violent-relationship-breakdown-with-partner
+                                 :other-violence-or-harrassment
+                                 :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
+                                 :home-no-longer-suitable-disability--ill-health
+                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                                 :other-reasons--not-known])) (:reason %)))
       (tc/drop-rows #(#{:total-owed-a-relief-duty1 :date} (:reason %)))))
 
 (
