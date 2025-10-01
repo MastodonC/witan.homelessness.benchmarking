@@ -95,6 +95,17 @@
         (tc/select-columns [:date :name :quarter :year
                             :households-assessed-as-threatened-with-homelessness-per-1000]))))
 
+(defn combine-columns [ds out-col col-1 col-2]
+  (tc/map-columns ds out-col [col-1 col-2]
+                  (fn [c-1 c-2]
+                    (cond
+                      c-2
+                      c-2
+                      c-1
+                      c-1
+                      :else
+                      nil))))
+
 (def A2R
   (let [raw @bass/A2R]
     {:total-homeless-end-of-ast
@@ -193,17 +204,9 @@
       :neighbours statistical-neighbours-pred
       :data (-> raw
                 (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/map-columns :home-no-longer-suitable-disability-ill-health
-                                [:home-no-longer-suitable-disability--ill-health-5
-                                 :home-no-longer-suitable-disability--ill-health-6]
-                                (fn [h5 h6]
-                                  (cond
-                                    h6
-                                    h6
-                                    h5
-                                    h5
-                                    :else
-                                    nil)))
+                (combine-columns :home-no-longer-suitable-disability-ill-health
+                                 :home-no-longer-suitable-disability--ill-health-5
+                                 :home-no-longer-suitable-disability--ill-health-6)
                 (tc/select-columns [:date :name :quarter :year
                                     :home-no-longer-suitable-disability-ill-health]))}
      :total-homeless-resettlement
@@ -211,17 +214,9 @@
       :neighbours statistical-neighbours-pred
       :data (-> raw
                 (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/map-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                [:loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6]
-                                (fn [h5 h6]
-                                  (cond
-                                    h6
-                                    h6
-                                    h5
-                                    h5
-                                    :else
-                                    nil)))
+                (combine-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6)
                 (tc/select-columns [:date :name :quarter :year
                                     :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme]))}
      :total-homeless-other
@@ -229,17 +224,9 @@
       :neighbours statistical-neighbours-pred
       :data (-> raw
                 (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/map-columns :other-reasons--not-known
-                                [:other-reasons--not-known
-                                 :other-reasons--not-known5]
-                                (fn [h5 h6]
-                                  (cond
-                                    h6
-                                    h6
-                                    h5
-                                    h5
-                                    :else
-                                    nil)))
+                (combine-columns :other-reasons--not-known
+                                 :other-reasons--not-known
+                                 :other-reasons--not-known5)
                 (tc/select-columns [:date :name :quarter :year
                                     :other-reasons--not-known]))}}))
 
@@ -341,17 +328,9 @@
       :neighbours statistical-neighbours-pred
       :data (-> raw
                 (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/map-columns :home-no-longer-suitable-disability-ill-health
-                                [:home-no-longer-suitable-disability--ill-health-5
-                                 :home-no-longer-suitable-disability--ill-health-6]
-                                (fn [h5 h6]
-                                  (cond
-                                    h6
-                                    h6
-                                    h5
-                                    h5
-                                    :else
-                                    nil)))
+                (combine-columns :home-no-longer-suitable-disability-ill-health
+                                 :home-no-longer-suitable-disability--ill-health-5
+                                 :home-no-longer-suitable-disability--ill-health-6)
                 (tc/select-columns [:date :name :quarter :year
                                     :home-no-longer-suitable-disability-ill-health]))}
      :total-homeless-resettlement
@@ -359,17 +338,9 @@
       :neighbours statistical-neighbours-pred
       :data (-> raw
                 (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/map-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                [:loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6]
-                                (fn [h5 h6]
-                                  (cond
-                                    h6
-                                    h6
-                                    h5
-                                    h5
-                                    :else
-                                    nil)))
+                (combine-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6)
                 (tc/select-columns [:date :name :quarter :year
                                     :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme]))}
      :total-homeless-other
@@ -377,17 +348,9 @@
       :neighbours statistical-neighbours-pred
       :data (-> raw
                 (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/map-columns :other-reasons--not-known
-                                [:other-reasons--not-known
-                                 :other-reasons--not-known5]
-                                (fn [h5 h6]
-                                  (cond
-                                    h6
-                                    h6
-                                    h5
-                                    h5
-                                    :else
-                                    nil)))
+                (combine-columns :other-reasons--not-known
+                                 :other-reasons--not-known
+                                 :other-reasons--not-known5)
                 (tc/select-columns [:date :name :quarter :year
                                     :other-reasons--not-known]))}}))
 
@@ -395,39 +358,15 @@
   (-> @bass/A2R
       (tc/select-rows #(#{la-name} (:name %)))
       (tc/order-by :date)
-      (tc/map-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                      [:loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                       :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6]
-                      (fn [h5 h6]
-                        (cond
-                          h6
-                          h6
-                          h5
-                          h5
-                          :else
-                          nil)))
-      (tc/map-columns :home-no-longer-suitable-disability-ill-health
-                      [:home-no-longer-suitable-disability--ill-health-5
-                       :home-no-longer-suitable-disability--ill-health-6]
-                      (fn [h5 h6]
-                        (cond
-                          h6
-                          h6
-                          h5
-                          h5
-                          :else
-                          nil)))
-      (tc/map-columns :other-reasons--not-known
-                      [:other-reasons--not-known
-                       :other-reasons--not-known5]
-                      (fn [h5 h6]
-                        (cond
-                          h6
-                          h6
-                          h5
-                          h5
-                          :else
-                          nil)))
+      (combine-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                       :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                       :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6)
+      (combine-columns :home-no-longer-suitable-disability-ill-health
+                       :home-no-longer-suitable-disability--ill-health-5
+                       :home-no-longer-suitable-disability--ill-health-6)
+      (combine-columns :other-reasons--not-known
+                       :other-reasons--not-known
+                       :other-reasons--not-known5)
       (tc/pivot->longer (complement #{:code :name :quarter :year}))
       (tc/rename-columns {:$column :reason :$value :count})
       (tc/drop-rows #(#{:date :total-owed-a-relief-duty1} (:reason %)))))
@@ -469,39 +408,15 @@
   (-> @bass/A2P
       (tc/select-rows #(#{la-name} (:name %)))
       (tc/order-by :date)
-      (tc/map-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                      [:loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                       :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6]
-                      (fn [h5 h6]
-                        (cond
-                          h6
-                          h6
-                          h5
-                          h5
-                          :else
-                          nil)))
-      (tc/map-columns :home-no-longer-suitable-disability-ill-health
-                      [:home-no-longer-suitable-disability--ill-health-5
-                       :home-no-longer-suitable-disability--ill-health-6]
-                      (fn [h5 h6]
-                        (cond
-                          h6
-                          h6
-                          h5
-                          h5
-                          :else
-                          nil)))
-      (tc/map-columns :other-reasons--not-known
-                      [:other-reasons--not-known
-                       :other-reasons--not-known5]
-                      (fn [h5 h6]
-                        (cond
-                          h6
-                          h6
-                          h5
-                          h5
-                          :else
-                          nil)))
+      (combine-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                       :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                       :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6)
+      (combine-columns :home-no-longer-suitable-disability-ill-health
+                       :home-no-longer-suitable-disability--ill-health-5
+                       :home-no-longer-suitable-disability--ill-health-6)
+      (combine-columns :other-reasons--not-known
+                       :other-reasons--not-known
+                       :other-reasons--not-known5)
       (tc/pivot->longer (complement #{:code :name :quarter :year}))
       (tc/rename-columns {:$column :reason :$value :count})
       (tc/drop-rows #(#{:date :total-owed-a-relief-duty1} (:reason %)))
