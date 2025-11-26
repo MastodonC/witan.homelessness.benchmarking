@@ -557,6 +557,14 @@
 (mc-logo)
 
 ;; ---
+;; ## We have taken
+;; ## "relief duty owed" to mean a household experiencing homelessness
+;; ## and
+;; ## "prevention duty owed" to mean a household threatened with homelessness
+
+(mc-logo)
+
+;; ---
 ;; ## Total experiencing homelessness
 (clerk/row {::clerk/width :full}
            (clerk/vl (single-line-chart {:ds number-homeless
