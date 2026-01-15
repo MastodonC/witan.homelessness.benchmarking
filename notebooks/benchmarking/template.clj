@@ -251,6 +251,86 @@
                                   :else
                                   nil)))))
 
+(def A2R-per-000
+  (let [raw (-> @bass/A2R
+                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %))))]
+    {:total-homeless-end-of-ast
+     {:title "End of ensured shorthold private rented tenancy (AST)"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :total-end--of-ast)}
+     :total-homeless-end-of-non-ast
+     {:title "End of ensured non-AST private rented tenancy"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :end-of-non-ast-private-rented-tenancy)}
+     :total-homeless-family-friends
+     {:title "Family or friends no longer willing or able to accommodate"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :family-or-friends-no-longer-willing-or-able-to-accommodate)}
+     :total-homeless-non-violent-breakdown-w-partner
+     {:title "Non-violent relationship breakdown with partner"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :non-violent-relationship-breakdown-with-partner)}
+     :total-homeless-domestic-abuse
+     {:title "Total Domestic abuse"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :total-domestic-abuse)}
+     :total-homeless-violence-harassment
+     {:title "Other violence or harrassment"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :other-violence-or-harrassment)}
+     :total-homeless-end-of-social-tenancy
+     {:title "End of social rented tenancy"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :total-end-of-social-rented-tenancy)}
+     :total-homeless-eviction-supported-housing
+     {:title "Eviction from supported housing"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :total-evicted-from-supported-housing)}
+     :total-homeless-custody
+     {:title "Departure from custody/prison"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :custody)}
+     :total-homeless-psychiatric-hospital
+     {:title "Departure from psychiatric hospital"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :hospital-psychiatric)}
+     :total-homeless-general-hospital
+     {:title "Departure from general hospital"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :hospital-general)}
+     :total-homeless-lac
+     {:title "Departure from Looked After Child (LAC) placement"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :looked-after-child-placement)}
+     :total-homeless-asylum
+     {:title "Required to leave accommodation provided by Home Office as asylum support"
+      :neighbours statistical-neighbours-pred
+      :data (calculate-per-000 raw :required-to-leave-accommodation-provided-by-home-office-as-asylum-support)}
+     :total-homeless-disability-ill
+     {:title "Home no longer suitable - disability / ill health"
+      :neighbours statistical-neighbours-pred
+      :data (-> raw
+                (combine-columns :home-no-longer-suitable-disability-ill-health
+                                 :home-no-longer-suitable-disability--ill-health-5
+                                 :home-no-longer-suitable-disability--ill-health-6)
+                (calculate-per-000 :home-no-longer-suitable-disability-ill-health))}
+     :total-homeless-resettlement
+     {:title "Loss of placement or sponsorship provided through a resettlement scheme"
+      :neighbours statistical-neighbours-pred
+      :data (-> raw
+                (combine-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6)
+                (calculate-per-000 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme))}
+     :total-homeless-other
+     {:title "Other reasons / not known5"
+      :neighbours statistical-neighbours-pred
+      :data (-> raw
+                (combine-columns :other-reasons--not-known
+                                 :other-reasons--not-known
+                                 :other-reasons--not-known5)
+                (calculate-per-000 :other-reasons--not-known))}}))
+
 (def A2P
   (let [raw @bass/A2P]
     {:total-homeless-end-of-ast
