@@ -239,6 +239,18 @@
                 (tc/select-columns [:date :name :quarter :year
                                     :other-reasons--not-known]))}}))
 
+(defn calculate-per-000 [ds key]
+  (-> ds
+      (tc/select-columns [:date :name :quarter :year key])
+      (tc/left-join number-household-in-area-000 [:date :name])
+      (tc/drop-columns [:A1.date :A1.name :A1.quarter :A1.year])
+      (tc/map-columns :total-end--of-ast-per-000 [key :number-of-households--in-area-1000]
+                      (fn [x y] (cond
+                                  (every? number? [x y])
+                                  (/ x y)
+                                  :else
+                                  nil)))))
+
 (def A2P
   (let [raw @bass/A2P]
     {:total-homeless-end-of-ast
