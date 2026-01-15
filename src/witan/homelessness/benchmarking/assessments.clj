@@ -5,6 +5,10 @@
    [tablecloth.api :as tc]
    [tech.v3.libs.fastexcel :as fst]))
 
+(def assessments-202506 {:resource-file-name "./homelessness-statistics/Statutory_Homelessness_Detailed_Local_Authority_Data_202506.xlsx"
+                         :quarter "06"
+                         :year 2025})
+
 (def assessments-202503 {:resource-file-name "./homelessness-statistics/Detailed_LA_202503.xlsx"
                          :quarter "03"
                          :year 2025})
@@ -104,7 +108,8 @@
 
 (def assessments-data
   "not including data prior to June 2020"
-  [assessments-202503
+  [assessments-202506
+   assessments-202503
    assessments-202412
    assessments-202409
    assessments-202406

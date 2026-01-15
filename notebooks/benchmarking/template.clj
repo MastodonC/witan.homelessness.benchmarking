@@ -580,6 +580,21 @@
 (mc-logo)
 
 ;; ---
+;; ## Total experiencing homelessness per 1000
+(clerk/row {::clerk/width :full}
+           (clerk/vl (single-line-chart {:ds number-homeless-per-000
+                                         :y-field :households-assessed-as-homeless-per-1000
+                                         :y-title "Count of homeless relief owed per 1000"}))
+           (clerk/plotly
+            (neighbour-comparison-boxplot {:neighbour-data number-homeless-per-000
+                                           :la-name la-name
+                                           :title (str la-name " Total Experiencing Homelessness per 1000 w/Statistical Neighbours")
+                                           :y-field :households-assessed-as-homeless-per-1000
+                                           :y-title "Count experiencing homelessness per 1000"})))
+
+(mc-logo)
+
+;; ---
 ;; ## Total threatened with homelessness
 (clerk/row {::clerk/width :full}
            (clerk/vl (single-line-chart {:ds number-threatened-w-homeless
@@ -592,21 +607,6 @@
                                            :title (str la-name " Total Threatened with Homelessness w/Statistical Neighbours")
                                            :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
                                            :y-title "Count threatened w/homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness per 1000
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds number-homeless-per-000
-                                         :y-field :households-assessed-as-homeless-per-1000
-                                         :y-title "Count of homeless relief owed per 1000"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data number-homeless-per-000
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness per 1000 w/Statistical Neighbours")
-                                           :y-field :households-assessed-as-homeless-per-1000
-                                           :y-title "Count experiencing homelessness per 1000"})))
 
 (mc-logo)
 
