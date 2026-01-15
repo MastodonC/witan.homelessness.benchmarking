@@ -95,6 +95,15 @@
         (tc/select-columns [:date :name :quarter :year
                             :households-assessed-as-threatened-with-homelessness-per-1000]))))
 
+(def number-household-in-area-000
+  "for per 1000 calulcations"
+  (-> @bass/A1
+      (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
+      (tc/select-columns [:date :name :quarter :year
+                          :number-of-households--in-area-1000])))
+
+
+
 (defn combine-columns [ds out-col col-1 col-2]
   (tc/map-columns ds out-col [col-1 col-2]
                   (fn [c-1 c-2]
