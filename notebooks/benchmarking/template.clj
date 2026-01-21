@@ -537,10 +537,15 @@
                       (tc/order-by :date)
                       (tc/rows :as-maps))}
    :mark {:type "line"}
-   :encoding {:x {:field :date :type "temporal" :title "Quarter"}
+   :encoding {:x {:field :date :type "temporal"
+                  :axis {:title "Quarter" :titleFontSize 18.0
+                         :labelFontSize 15.0}}
               :y {:field y-field
-                  :type "quantitative" :title y-title}
-              :color {:field :name :type "nominal"}}})
+                  :type "quantitative"
+                  :axis {:title y-title :titleFontSize 18.0
+                         :labelFontSize 15.0}}
+              :color {:field :name :type "nominal"
+                      :legend nil}}})
 
 (defn neighbour-comparison-boxplot
   [{:keys [neighbour-data la-name title y-field y-title x-field x-title max-y]
@@ -583,13 +588,15 @@
              :marker {:color "blue" :size 14 :symbol "star-diamond"}
              :mode "markers"
              :type "scatter"})
-     :layout {:title {:text title}
+     :layout {:title title
+              :font {:size 18}
               :scattermode "group"
               :scattergap 0.7
               :xaxis {:title x-title}
-              :yaxis {:rangemode "tozero" :title y-title :range (when max-y [0 max-y])}
+              :yaxis {:rangemode "tozero" :range (when max-y [0 max-y])
+                      :title y-title}
               :height 600
-              :width 1000
+              :width 1150
               :showlegend false}
      :config {:displayModeBar false
               :displayLogo false}}))
@@ -679,7 +686,7 @@
                                            :la-name la-name
                                            :title (str la-name " Total Experiencing Homelessness w/Statistical Neighbours")
                                            :y-field :homeless-relief-duty-owed4
-                                           :y-title "Count experiencing homelessness"})))
+                                           :y-title "Count"})))
 
 (mc-logo)
 
@@ -694,7 +701,7 @@
                                            :la-name la-name
                                            :title (str la-name " Total Experiencing Homelessness per 1000 w/Statistical Neighbours")
                                            :y-field :households-assessed-as-homeless-per-1000
-                                           :y-title "Count experiencing homelessness per 1000"})))
+                                           :y-title "Count per 1000"})))
 
 (mc-logo)
 
@@ -710,7 +717,7 @@
                                            :la-name la-name
                                            :title (str la-name " Total Threatened with Homelessness w/Statistical Neighbours")
                                            :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
-                                           :y-title "Count threatened w/homelessness"})))
+                                           :y-title "Count"})))
 
 (mc-logo)
 
@@ -725,7 +732,7 @@
                                            :la-name la-name
                                            :title (str la-name " Total Experiencing Homelessness due to end of AST w/Statistical Neighbours")
                                            :y-field :total-end--of-ast
-                                           :y-title "Count experiencing homelessness"
+                                           :y-title "Count"
                                            })))
 
 (mc-logo)
