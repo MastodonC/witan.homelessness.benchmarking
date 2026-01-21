@@ -99,8 +99,11 @@
   "for per 1000 calulcations"
   (-> @bass/A1
       (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
+      (combine-columns :number-of-households-in-area-1000
+                       :number-of-households--in-area-1000
+                       :number-of-households--in-area4-1000)
       (tc/select-columns [:date :name :quarter :year
-                          :number-of-households--in-area-1000])))
+                          :number-of-households-in-area-1000])))
 
 
 
