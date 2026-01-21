@@ -63,6 +63,17 @@
  ;; Data
  )
 
+(defn combine-columns [ds out-col col-1 col-2]
+  (tc/map-columns ds out-col [col-1 col-2]
+                  (fn [c-1 c-2]
+                    (cond
+                      c-2
+                      c-2
+                      c-1
+                      c-1
+                      :else
+                      nil))))
+
 (def number-homeless
   "relief duty owed"
   (let [neighbours statistical-neighbours-pred]
@@ -104,19 +115,6 @@
                        :number-of-households--in-area4-1000)
       (tc/select-columns [:date :name :quarter :year
                           :number-of-households-in-area-1000])))
-
-
-
-(defn combine-columns [ds out-col col-1 col-2]
-  (tc/map-columns ds out-col [col-1 col-2]
-                  (fn [c-1 c-2]
-                    (cond
-                      c-2
-                      c-2
-                      c-1
-                      c-1
-                      :else
-                      nil))))
 
 (def A2R
   (let [raw @bass/A2R]
