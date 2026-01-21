@@ -738,6 +738,48 @@
 (mc-logo)
 
 ;; ---
+;; ## Total experiencing homelessness per 1000 due to end of AST
+(clerk/row {::clerk/width :full}
+           (clerk/vl (single-line-chart {:ds (-> A2R-per-000 :total-homeless-end-of-ast :data)
+                                         :y-field :total-end--of-ast-per-000
+                                         :y-title "Count experiencing homelessness per 1000"}))
+           (clerk/plotly
+            (neighbour-comparison-boxplot {:neighbour-data (-> A2R-per-000 :total-homeless-end-of-ast :data)
+                                           :la-name la-name
+                                           :title (str la-name " Total Experiencing Homelessness  per 1000 due to end of AST w/Statistical Neighbours")
+                                           :y-field :total-end--of-ast-per-000
+                                           :y-title "Count per 1000"
+                                           })))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to end of AST
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds (-> A2R-per-000 :total-homeless-end-of-ast :data)
+                                                    :y-field :total-end--of-ast-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-end-of-ast :data)
+                                                    :y-field :total-end--of-ast
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (assoc-in (neighbour-comparison-boxplot {:neighbour-data (-> A2R-per-000 :total-homeless-end-of-ast :data)
+                                                                :la-name la-name
+                                                                :title (str la-name " Total Experiencing Homelessness per 1000 due to end of AST w/Statistical Neighbours")
+                                                                :y-field :total-end--of-ast-per-000
+                                                                :y-title "Count per 1000"
+                                                                }) [:layout :height] 400))
+                      (clerk/plotly
+                       (assoc-in (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-end-of-ast :data)
+                                                                :la-name la-name
+                                                                :title (str la-name " Total Experiencing Homelessness due to end of AST w/Statistical Neighbours")
+                                                                :y-field :total-end--of-ast
+                                                                :y-title "Count"
+                                                                }) [:layout :height] 400))))
+
+(mc-logo)
+
+;; ---
 ;; ## Total experiencing homelessness due to end of private non-AST
 (clerk/row {::clerk/width :full}
            (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-end-of-non-ast :data)
