@@ -595,7 +595,7 @@
               :xaxis {:title x-title}
               :yaxis {:rangemode "tozero" :range (when max-y [0 max-y])
                       :title y-title}
-              :height 600
+              :height 400
               :width 1150
               :showlegend false}
      :config {:displayModeBar false
