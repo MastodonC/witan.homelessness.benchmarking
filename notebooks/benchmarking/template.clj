@@ -545,6 +545,26 @@
               :color {:field :name :type "nominal"
                       :legend nil}}})
 
+(defn double-line-chart [{:keys [ds y-field-1 y-field-2 y-title-1 y-title-2]}]
+  {:data {:values (-> ds
+                      (tc/select-rows #(#{la-name} (:name %)))
+                      (tc/order-by :date)
+                      (tc/rows :as-maps))}
+   :encoding {:x {:field :date :type "temporal"
+                  :axis {:title "Quarter" :titleFontSize 18.0
+                         :labelFontSize 15.0}}}
+   :layer [{:mark {:type "line"}
+            :encoding {:y {:field y-field-1
+                           :type "quantitative"
+                           :axis {:title y-title-1 :titleFontSize 18.0
+                                  :labelFontSize 15.0}}}}
+           {:mark {:type "line"}
+            :encoding {:y {:field y-field-2
+                           :type "quantitative"
+                           :axis {:title y-title-2 :titleFontSize 18.0
+                                  :labelFontSize 15.0 :titleAngle 270}}}}] ;; still needs aligning
+   :resolve {:scale {:y "independent"}}})
+
 (defn neighbour-comparison-boxplot
   [{:keys [neighbour-data la-name title y-field y-title x-field x-title max-y]
     :or {x-field :date
@@ -725,9 +745,11 @@
 ;; ---
 ;; ## Total experiencing homelessness due to end of AST
 (clerk/row {::clerk/width :full}
-           (clerk/col (clerk/vl (single-line-chart {:ds (-> A2R-per-000 :total-homeless-end-of-ast :data)
-                                                    :y-field :total-end--of-ast-per-000
-                                                    :y-title "Count experiencing homelessness per 1000"}))
+           (clerk/col (clerk/vl (double-line-chart {:ds (-> A2R-per-000 :total-homeless-end-of-ast :data)
+                                                    :y-field-1 :total-end--of-ast-per-000
+                                                    :y-field-2 :total-end--of-ast
+                                                    :y-title-1 "Count experiencing homelessness per 1000"
+                                                    :y-title-2 "Count experiencing homelessness"}))
                       (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-end-of-ast :data)
                                                     :y-field :total-end--of-ast
                                                     :y-title "Count experiencing homelessness"})))
