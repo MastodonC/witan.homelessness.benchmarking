@@ -245,7 +245,10 @@
       (tc/select-columns [:date :name :quarter :year key])
       (tc/left-join number-household-in-area-000 [:date :name])
       (tc/drop-columns [:A1.date :A1.name :A1.quarter :A1.year])
-      (tc/map-columns :total-end--of-ast-per-000 [key :number-of-households-in-area-1000]
+      (tc/map-columns (-> key
+                          name
+                          (str "-per-000")
+                          keyword) [key :number-of-households-in-area-1000]
                       (fn [x y] (cond
                                   (every? number? [x y])
                                   (/ x y)
