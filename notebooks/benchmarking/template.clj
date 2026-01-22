@@ -116,7 +116,7 @@
       (tc/select-columns [:date :name :quarter :year
                           :number-of-households-in-area-1000])))
 
-(def A2R
+(def A2R ;; TODO consider deleting, same data is ins A2R-per-000
   (let [raw @bass/A2R]
     {:total-homeless-end-of-ast
      {:title "End of ensured shorthold private rented tenancy (AST)"
@@ -754,7 +754,7 @@
                                                     :y-field-2 :total-end--of-ast
                                                     :y-title-1 "Count experiencing homelessness per 1000"
                                                     :y-title-2 "Count experiencing homelessness"}))
-                      (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-end-of-ast :data)
+                      (clerk/vl (single-line-chart {:ds (-> A2R-per-000 :total-homeless-end-of-ast :data)
                                                     :y-field :total-end--of-ast
                                                     :y-title "Count experiencing homelessness"})))
            (clerk/col (clerk/plotly
@@ -765,7 +765,7 @@
                                                                 :y-title "Count per 1000"
                                                                 }) [:layout :height] 400))
                       (clerk/plotly
-                       (assoc-in (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-end-of-ast :data)
+                       (assoc-in (neighbour-comparison-boxplot {:neighbour-data (-> A2R-per-000 :total-homeless-end-of-ast :data)
                                                                 :la-name la-name
                                                                 :title (str la-name " Total Experiencing Homelessness due to end of AST w/Statistical Neighbours")
                                                                 :y-field :total-end--of-ast
@@ -780,7 +780,7 @@
            (clerk/col (clerk/vl (single-line-chart {:ds (-> A2R-per-000 :total-homeless-end-of-non-ast :data)
                                                     :y-field :end-of-non-ast-private-rented-tenancy-per-000
                                                     :y-title "Count experiencing homelessness per 1000"}))
-                      (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-end-of-non-ast :data)
+                      (clerk/vl (single-line-chart {:ds (-> A2R-per-000 :total-homeless-end-of-non-ast :data)
                                                     :y-field :end-of-non-ast-private-rented-tenancy
                                                     :y-title "Count experiencing homelessness"})))
            (clerk/col (clerk/plotly
@@ -791,7 +791,7 @@
                                                       :y-title "Count per 1000"
                                                       }))
                       (clerk/plotly
-                       (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-end-of-non-ast :data)
+                       (neighbour-comparison-boxplot {:neighbour-data (-> A2R-per-000 :total-homeless-end-of-non-ast :data)
                                                       :la-name la-name
                                                       :title (str la-name " Total Experiencing Homelessness due to end of non-AST w/Statistical Neighbours")
                                                       :y-field :end-of-non-ast-private-rented-tenancy
