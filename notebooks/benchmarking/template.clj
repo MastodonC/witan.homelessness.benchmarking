@@ -562,7 +562,8 @@
             :encoding {:y {:field y-field-2
                            :type "quantitative"
                            :axis {:title y-title-2 :titleFontSize 18.0
-                                  :labelFontSize 15.0 :titleAngle 270}}}}] ;; still needs aligning
+                                  :labelFontSize 15.0 :titleAngle 270
+                                  :titleX 60}}}}]
    :resolve {:scale {:y "independent"}}})
 
 (defn neighbour-comparison-boxplot
