@@ -803,18 +803,51 @@
 ;; ---
 ;; ## Total experiencing homelessness due to family or friends no longer willing or able to accomodate
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-family-friends :data)
-                                         :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-family-friends :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to family & friends no longer able or willing w/Statistical Neighbours")
-                                           :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
-                                           :y-title "Count experiencing homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds (-> A2R-per-000 :total-homeless-family-friends :data)
+                                                    :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds (-> A2R-per-000 :total-homeless-family-friends :data)
+                                                    :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data (-> A2R-per-000 :total-homeless-family-friends :data)
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to family & friends no longer able or willing w/Statistical Neighbours") ;; TODO chart titles are too long, can it be spread over two lines?
+                                                      :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data (-> A2R-per-000 :total-homeless-family-friends :data)
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to family & friends no longer able or willing w/Statistical Neighbours")
+                                                      :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
+                                                      :y-title "Count"
+                                                      }))))
 
 (mc-logo)
+
+;; ---
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds (-> A2R-per-000 :total-homeless-family-friends :data)
+                                                    :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds (-> A2R-per-000 :total-homeless-family-friends :data)
+                                                    :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data (-> A2R-per-000 :total-homeless-family-friends :data)
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to family & friends no longer able or willing w/Statistical Neighbours") ;; TODO chart titles are too long, can it be spread over two lines?
+                                                      :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data (-> A2R-per-000 :total-homeless-family-friends :data)
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to family & friends no longer able or willing w/Statistical Neighbours")
+                                                      :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
+                                                      :y-title "Count"
+                                                      }))))
 
 ;; ---
 ;; ## Total experiencing homelessness due to non-violent relationship breakdown with partner
