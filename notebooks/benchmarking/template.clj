@@ -9,6 +9,7 @@
             [tablecloth.api :as tc]
             [witan.send.adroddiad.clerk.html :as chtml]
             [witan.homelessness.benchmarking.assessments :as bass]
+            [witan.send.adroddiad.clerk.charting-v2 :as cv2]
             [witan.homelessness.benchmarking.regional-neighbours :as rn]
             [witan.homelessness.benchmarking.statistical-neighbours :as sn]
             [clojure.string :as s]))
@@ -63,6 +64,17 @@
  ;; Data
  )
 
+(defn combine-columns [ds out-col col-1 col-2]
+  (tc/map-columns ds out-col [col-1 col-2]
+                  (fn [c-1 c-2]
+                    (cond
+                      c-2
+                      c-2
+                      c-1
+                      c-1
+                      :else
+                      nil))))
+
 (def number-homeless
   "relief duty owed"
   (let [neighbours statistical-neighbours-pred]
@@ -95,264 +107,89 @@
         (tc/select-columns [:date :name :quarter :year
                             :households-assessed-as-threatened-with-homelessness-per-1000]))))
 
-(defn combine-columns [ds out-col col-1 col-2]
-  (tc/map-columns ds out-col [col-1 col-2]
-                  (fn [c-1 c-2]
-                    (cond
-                      c-2
-                      c-2
-                      c-1
-                      c-1
-                      :else
-                      nil))))
+(def number-household-in-area-000
+  "for per 1000 calulcations"
+  (-> @bass/A1
+      (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
+      (combine-columns :number-of-households-in-area-1000
+                       :number-of-households--in-area-1000
+                       :number-of-households--in-area4-1000)
+      (tc/select-columns [:date :name :quarter :year
+                          :number-of-households-in-area-1000])))
+
+(defn calculate-per-000 [ds key]
+  (tc/map-columns ds
+                  (-> key
+                      name
+                      (str "-per-000")
+                      keyword) [key :number-of-households-in-area-1000]
+                  (fn [x y] (cond
+                              (every? number? [x y])
+                              (/ x y)
+                              :else
+                              nil))))
 
 (def A2R
-  (let [raw @bass/A2R]
-    {:total-homeless-end-of-ast
-     {:title "End of ensured shorthold private rented tenancy (AST)"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :total-end--of-ast]))}
-     :total-homeless-end-of-non-ast
-     {:title "End of ensured non-AST private rented tenancy"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :end-of-non-ast-private-rented-tenancy]))}
-     :total-homeless-family-friends
-     {:title "Family or friends no longer willing or able to accommodate"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :family-or-friends-no-longer-willing-or-able-to-accommodate]))}
-     :total-homeless-non-violent-breakdown-w-partner
-     {:title "Non-violent relationship breakdown with partner"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :non-violent-relationship-breakdown-with-partner]))}
-     :total-homeless-domestic-abuse
-     {:title "Total Domestic abuse"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :total-domestic-abuse]))}
-     :total-homeless-violence-harassment
-     {:title "Other violence or harrassment"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :other-violence-or-harrassment]))}
-     :total-homeless-end-of-social-tenancy
-     {:title "End of social rented tenancy"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :total-end-of-social-rented-tenancy]))}
-     :total-homeless-eviction-supported-housing
-     {:title "Eviction from supported housing"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :total-evicted-from-supported-housing]))}
-     :total-homeless-custody
-     {:title "Departure from custody/prison"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :custody]))}
-     :total-homeless-psychiatric-hospital
-     {:title "Departure from psychiatric hospital"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :hospital-psychiatric]))}
-     :total-homeless-general-hospital
-     {:title "Departure from general hospital"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :hospital-general]))}
-     :total-homeless-lac
-     {:title "Departure from Looked After Child (LAC) placement"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :looked-after-child-placement]))}
-     :total-homeless-asylum
-     {:title "Required to leave accommodation provided by Home Office as asylum support"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :required-to-leave-accommodation-provided-by-home-office-as-asylum-support]))}
-     :total-homeless-disability-ill
-     {:title "Home no longer suitable - disability / ill health"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (combine-columns :home-no-longer-suitable-disability-ill-health
-                                 :home-no-longer-suitable-disability--ill-health-5
-                                 :home-no-longer-suitable-disability--ill-health-6)
-                (tc/select-columns [:date :name :quarter :year
-                                    :home-no-longer-suitable-disability-ill-health]))}
-     :total-homeless-resettlement
-     {:title "Loss of placement or sponsorship provided through a resettlement scheme"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (combine-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+  (as-> @bass/A2R $
+    (tc/select-rows $ #((conj (set statistical-neighbours-pred) la-name) (:name %)))
+    (tc/left-join $ number-household-in-area-000 [:date :name])
+    (tc/drop-columns $ [:A1.date :A1.name :A1.quarter :A1.year])
+    (combine-columns $ :home-no-longer-suitable-disability-ill-health
+                     :home-no-longer-suitable-disability--ill-health-5
+                     :home-no-longer-suitable-disability--ill-health-6)
+    (combine-columns $ :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                     :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                     :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6)
+    (combine-columns $ :other-reasons--not-known
+                     :other-reasons--not-known
+                     :other-reasons--not-known5)
+    (reduce calculate-per-000 $ [:total-end--of-ast
+                                 :end-of-non-ast-private-rented-tenancy
+                                 :family-or-friends-no-longer-willing-or-able-to-accommodate
+                                 :non-violent-relationship-breakdown-with-partner
+                                 :total-domestic-abuse
+                                 :other-violence-or-harrassment
+                                 :total-end-of-social-rented-tenancy
+                                 :total-evicted-from-supported-housing
+                                 :custody
+                                 :hospital-psychiatric
+                                 :hospital-general
+                                 :looked-after-child-placement
+                                 :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
+                                 :home-no-longer-suitable-disability-ill-health
                                  :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6)
-                (tc/select-columns [:date :name :quarter :year
-                                    :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme]))}
-     :total-homeless-other
-     {:title "Other reasons / not known5"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (combine-columns :other-reasons--not-known
-                                 :other-reasons--not-known
-                                 :other-reasons--not-known5)
-                (tc/select-columns [:date :name :quarter :year
-                                    :other-reasons--not-known]))}}))
+                                 :other-reasons--not-known])))
 
 (def A2P
-  (let [raw @bass/A2P]
-    {:total-homeless-end-of-ast
-     {:title "End of ensured shorthold private rented tenancy (AST)"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :total-end--of-ast]))}
-     :total-homeless-end-of-non-ast
-     {:title "End of ensured non-AST private rented tenancy"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :end-of-non-ast-private-rented-tenancy]))}
-     :total-homeless-family-friends
-     {:title "Family or friends no longer willing or able to accommodate"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :family-or-friends-no-longer-willing-or-able-to-accommodate]))}
-     :total-homeless-non-violent-breakdown-w-partner
-     {:title "Non-violent relationship breakdown with partner"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :non-violent-relationship-breakdown-with-partner]))}
-     :total-homeless-domestic-abuse
-     {:title "Total Domestic abuse"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :total-domestic-abuse]))}
-     :total-homeless-violence-harassment
-     {:title "Other violence or harrassment"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :other-violence-or-harrassment]))}
-     :total-homeless-end-of-social-tenancy
-     {:title "End of social rented tenancy"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :total-end-of-social-rented-tenancy]))}
-     :total-homeless-eviction-supported-housing
-     {:title "Eviction from supported housing"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :total-evicted-from-supported-housing]))}
-     :total-homeless-custody
-     {:title "Departure from custody/prison"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :custody]))}
-     :total-homeless-psychiatric-hospital
-     {:title "Departure from psychiatric hospital"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :hospital-psychiatric]))}
-     :total-homeless-general-hospital
-     {:title "Departure from general hospital"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :hospital-general]))}
-     :total-homeless-lac
-     {:title "Departure from Looked After Child (LAC) placement"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :looked-after-child-placement]))}
-     :total-homeless-asylum
-     {:title "Required to leave accommodation provided by Home Office as asylum support"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (tc/select-columns [:date :name :quarter :year
-                                    :required-to-leave-accommodation-provided-by-home-office-as-asylum-support]))}
-     :total-homeless-disability-ill
-     {:title "Home no longer suitable - disability / ill health"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (combine-columns :home-no-longer-suitable-disability-ill-health
-                                 :home-no-longer-suitable-disability--ill-health-5
-                                 :home-no-longer-suitable-disability--ill-health-6)
-                (tc/select-columns [:date :name :quarter :year
-                                    :home-no-longer-suitable-disability-ill-health]))}
-     :total-homeless-resettlement
-     {:title "Loss of placement or sponsorship provided through a resettlement scheme"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (combine-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+  (as-> @bass/A2P $
+    (tc/select-rows $ #((conj (set statistical-neighbours-pred) la-name) (:name %)))
+    (tc/left-join $ number-household-in-area-000 [:date :name])
+    (tc/drop-columns $ [:A1.date :A1.name :A1.quarter :A1.year])
+    (combine-columns $ :home-no-longer-suitable-disability-ill-health
+                     :home-no-longer-suitable-disability--ill-health-5
+                     :home-no-longer-suitable-disability--ill-health-6)
+    (combine-columns $ :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                     :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                     :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6)
+    (combine-columns $ :other-reasons--not-known
+                     :other-reasons--not-known
+                     :other-reasons--not-known5)
+    (reduce calculate-per-000 $ [:total-end--of-ast
+                                 :end-of-non-ast-private-rented-tenancy
+                                 :family-or-friends-no-longer-willing-or-able-to-accommodate
+                                 :non-violent-relationship-breakdown-with-partner
+                                 :total-domestic-abuse
+                                 :other-violence-or-harrassment
+                                 :total-end-of-social-rented-tenancy
+                                 :total-evicted-from-supported-housing
+                                 :custody
+                                 :hospital-psychiatric
+                                 :hospital-general
+                                 :looked-after-child-placement
+                                 :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
+                                 :home-no-longer-suitable-disability-ill-health
                                  :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6)
-                (tc/select-columns [:date :name :quarter :year
-                                    :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme]))}
-     :total-homeless-other
-     {:title "Other reasons / not known5"
-      :neighbours statistical-neighbours-pred
-      :data (-> raw
-                (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
-                (combine-columns :other-reasons--not-known
-                                 :other-reasons--not-known
-                                 :other-reasons--not-known5)
-                (tc/select-columns [:date :name :quarter :year
-                                    :other-reasons--not-known]))}}))
+                                 :other-reasons--not-known])))
 
 (def la-reasons-for-homelessness
   (-> @bass/A2R
@@ -367,7 +204,24 @@
       (combine-columns :other-reasons--not-known
                        :other-reasons--not-known
                        :other-reasons--not-known5)
-      (tc/pivot->longer (complement #{:code :name :quarter :year}))
+      (tc/pivot->longer (complement #{:code :name :quarter :year :date}))
+      (tc/rename-columns {:$column :reason :$value :count})
+      (tc/drop-rows #(#{:date :total-owed-a-relief-duty1} (:reason %)))))
+
+(def la-reasons-for-threatened-w-homelessness
+  (-> @bass/A2P
+      (tc/select-rows #(#{la-name} (:name %)))
+      (tc/order-by :date)
+      (combine-columns :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                       :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                       :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-6)
+      (combine-columns :home-no-longer-suitable-disability-ill-health
+                       :home-no-longer-suitable-disability--ill-health-5
+                       :home-no-longer-suitable-disability--ill-health-6)
+      (combine-columns :other-reasons--not-known
+                       :other-reasons--not-known
+                       :other-reasons--not-known5)
+      (tc/pivot->longer (complement #{:code :name :quarter :year :date}))
       (tc/rename-columns {:$column :reason :$value :count})
       (tc/drop-rows #(#{:date :total-owed-a-relief-duty1} (:reason %)))))
 
@@ -388,6 +242,10 @@
 
 (def summarised-reason-for-homelessness
   (-> la-reasons-for-homelessness
+      (tc/select-rows #(summarised-reason-for-homelessness-keys (:reason %)))))
+
+(def summarised-reason-for-threatened-w-homelessness
+  (-> la-reasons-for-threatened-w-homelessness
       (tc/select-rows #(summarised-reason-for-homelessness-keys (:reason %)))))
 
 (def specific-reasons-for-homelessness
@@ -417,7 +275,7 @@
       (combine-columns :other-reasons--not-known
                        :other-reasons--not-known
                        :other-reasons--not-known5)
-      (tc/pivot->longer (complement #{:code :name :quarter :year}))
+      (tc/pivot->longer (complement #{:code :name :quarter :year :date}))
       (tc/rename-columns {:$column :reason :$value :count})
       (tc/drop-rows #(#{:date :total-owed-a-relief-duty1} (:reason %)))
       (tc/add-column :duty "prevention")
@@ -433,10 +291,36 @@
                       (tc/order-by :date)
                       (tc/rows :as-maps))}
    :mark {:type "line"}
-   :encoding {:x {:field :date :type "temporal" :title "Quarter"}
+   :encoding {:x {:field :date :type "temporal"
+                  :axis {:title "Quarter" :titleFontSize 18.0
+                         :labelFontSize 15.0}}
               :y {:field y-field
-                  :type "quantitative" :title y-title}
-              :color {:field :name :type "nominal"}}})
+                  :type "quantitative"
+                  :axis {:title y-title :titleFontSize 18.0
+                         :labelFontSize 15.0}}
+              :color {:field :name :type "nominal"
+                      :legend nil}}})
+
+(defn double-line-chart [{:keys [ds y-field-1 y-field-2 y-title-1 y-title-2]}]
+  {:data {:values (-> ds
+                      (tc/select-rows #(#{la-name} (:name %)))
+                      (tc/order-by :date)
+                      (tc/rows :as-maps))}
+   :encoding {:x {:field :date :type "temporal"
+                  :axis {:title "Quarter" :titleFontSize 18.0
+                         :labelFontSize 15.0}}}
+   :layer [{:mark {:type "line"}
+            :encoding {:y {:field y-field-1
+                           :type "quantitative"
+                           :axis {:title y-title-1 :titleFontSize 18.0
+                                  :labelFontSize 15.0}}}}
+           {:mark {:type "line"}
+            :encoding {:y {:field y-field-2
+                           :type "quantitative"
+                           :axis {:title y-title-2 :titleFontSize 18.0
+                                  :labelFontSize 15.0 :titleAngle 270
+                                  :titleX 60}}}}]
+   :resolve {:scale {:y "independent"}}})
 
 (defn neighbour-comparison-boxplot
   [{:keys [neighbour-data la-name title y-field y-title x-field x-title max-y]
@@ -479,51 +363,37 @@
              :marker {:color "blue" :size 14 :symbol "star-diamond"}
              :mode "markers"
              :type "scatter"})
-     :layout {:title {:text title}
+     :layout {:title title
+              :font {:size 18}
               :scattermode "group"
               :scattergap 0.7
               :xaxis {:title x-title}
-              :yaxis {:rangemode "tozero" :title y-title :range (when max-y [0 max-y])}
-              :height 600
-              :width 1000
+              :yaxis {:rangemode "tozero" :range (when max-y [0 max-y])
+                      :title y-title}
+              :height 400
+              :width 1150
               :showlegend false}
      :config {:displayModeBar false
               :displayLogo false}}))
 
-(defn la-comparison-boxplot
-  [{:keys [la-data title x-field x-title y-field y-title]
-    :or {title ""}}]
-  (let [box-data (transduce
-                  identity
-                  (fn
-                    ([] {})
-                    ([acc]
-                     (into []
-                           (map (fn [[k v]]
-                                  {:x k
-                                   :y (:y v)
-                                   :text (:text v)
-                                   :name k
-                                   :marker {:color "orange"}
-                                   :jitter 0.3
-                                   :type "box"}))
-                           acc))
-                    ([acc x]
-                     (-> acc
-                         (update-in [(x-field x) :y] conj (y-field x))
-                         (update-in [(x-field x) :text] conj (:name x)))))
-                  (tc/rows la-data :as-maps))]
-    {:data box-data
-     :layout {:title {:text title}
-              :scattermode "group"
-              :scattergap 0.7
-              :xaxis {:title x-title}
-              :yaxis {:rangemode "tozero" :title y-title}
-              :height 600
-              :width 1000
-              :showlegend false}
-     :config {:displayModeBar false
-              :displayLogo false}}))
+(defn duty-comparison-line-chart [reason-key]
+  {:data {:values (-> la-reasons-&-threatened-with-homelessness
+                      (tc/select-rows #(#{reason-key} (:reason %)))
+                      (tc/rows :as-maps))}
+   :mark {:type "line"}
+   :encoding {:x {:field :date :type "temporal"
+                  :axis {:title "Quarter" :titleFontSize 18.0
+                         :labelFontSize 15.0}}
+              :y {:field :count
+                  :type "quantitative"
+                  :axis {:title "Count" :titleFontSize 18.0
+                         :labelFontSize 15.0}}
+              :color {:field :duty :type "nominal"
+                      :title "Duty"
+                      :legend {:labelFontSize 18
+                               :titleFontSize 18}}}
+   :height 500
+   :width 1000})
 
 (
 ;;; Deck
@@ -565,849 +435,1158 @@
 (mc-logo)
 
 ;; ---
-;; ## Total experiencing homelessness
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds number-homeless
-                                         :y-field :homeless-relief-duty-owed4
-                                         :y-title "Count of homeless relief duty owed"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data number-homeless
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness w/Statistical Neighbours")
-                                           :y-field :homeless-relief-duty-owed4
-                                           :y-title "Count experiencing homelessness"})))
+;; # Total counts of households experiencing or
+;; # threatened with homelessness
 
 (mc-logo)
 
 ;; ---
-;; ## Total experiencing homelessness per 1000
+;; ## Total experiencing homelessness
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds number-homeless-per-000
-                                         :y-field :households-assessed-as-homeless-per-1000
-                                         :y-title "Count of homeless relief owed per 1000"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data number-homeless-per-000
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness per 1000 w/Statistical Neighbours")
-                                           :y-field :households-assessed-as-homeless-per-1000
-                                           :y-title "Count experiencing homelessness per 1000"})))
+           (clerk/col (clerk/vl (single-line-chart {:ds number-homeless-per-000
+                                                    :y-field :households-assessed-as-homeless-per-1000
+                                                    :y-title "Count of homeless relief owed per 1000"}))
+                      (clerk/vl (single-line-chart {:ds number-homeless
+                                                    :y-field :homeless-relief-duty-owed4
+                                                    :y-title "Count of homeless relief duty owed"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data number-homeless-per-000
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 w/Statistical Neighbours")
+                                                      :y-field :households-assessed-as-homeless-per-1000
+                                                      :y-title "Count per 1000"}))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data number-homeless
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness w/Statistical Neighbours")
+                                                      :y-field :homeless-relief-duty-owed4
+                                                      :y-title "Count"}))))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened with homelessness
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds number-threatened-w-homeless
-                                         :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
-                                         :y-title "Count of homeless prevention owed"}))
+           (clerk/col (clerk/vl (single-line-chart {:ds number-threatened-w-homeless-per-000
+                                                    :y-field :households-assessed-as-threatened-with-homelessness-per-1000
+                                                    :y-title "Count of homeless prevention owed per 1000"}))
+                      (clerk/vl (single-line-chart {:ds number-threatened-w-homeless
+                                                    :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
+                                                    :y-title "Count of homeless prevention owed"})))
 
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data number-threatened-w-homeless
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened with Homelessness w/Statistical Neighbours")
-                                           :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
-                                           :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data number-threatened-w-homeless-per-000
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened with Homelessness w/Statistical Neighbours")
+                                                      :y-field :households-assessed-as-threatened-with-homelessness-per-1000
+                                                      :y-title "Count per 1000"}))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data number-threatened-w-homeless
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened with Homelessness w/Statistical Neighbours")
+                                                      :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
+                                                      :y-title "Count"}))))
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of summarised reasons for homelessness
+(let [raw-threatened-data (-> summarised-reason-for-threatened-w-homelessness
+                              (tc/map-columns :reason #(-> %
+                                                           name
+                                                           (str/replace "-" " ")
+                                                           str/capitalize)))]
+  (clerk/row {::clerk/width :full}
+             (clerk/vl {:hconcat [{:data {:values (tc/rows raw-threatened-data :as-maps)}
+                                   :mark "bar"
+                                   :title {:text "% Threatened w/Homelessness"
+                                           :fontSize 18.0}
+                                   :encoding {:y {:aggregate "sum" :field :count
+                                                  :stack "normalize"
+                                                  :axis {:title "Households" :titleFontSize 18.0
+                                                         :labelFontSize 15.0}}
+                                              :x {:field :date
+                                                  :axis {:title "Quarter" :titleFontSize 18.0
+                                                         :labelFontSize 15.0}}
+                                              :color (into {:title "Reason"
+                                                            :legend {:labelFontSize 15
+                                                                     :titleFontSize 15
+                                                                     :labelLimit 0}}
+                                                           (cv2/color-map raw-threatened-data
+                                                                          :reason
+                                                                          (cv2/color-and-shape-lookup
+                                                                           (map #(-> %
+                                                                                     name
+                                                                                     (str/replace "-" " ")
+                                                                                     str/capitalize) summarised-reason-for-homelessness-keys))))}}
+                                  {:data {:values (-> summarised-reason-for-homelessness
+                                                      (tc/map-columns :reason #(-> %
+                                                                                   name
+                                                                                   (str/replace "-" " ")
+                                                                                   str/capitalize))
+                                                      (tc/rows :as-maps))}
+                                   :mark "bar"
+                                   :title {:text "% Experiencing Homelessness"
+                                           :fontSize 18.0}
+                                   :encoding {:y {:aggregate "sum" :field :count
+                                                  :stack "normalize"
+                                                  :axis {:title "" :labelFontSize 15.0}}
+                                              :x {:field :date
+                                                  :axis {:title "Quarter" :titleFontSize 18.0
+                                                         :labelFontSize 15.0}}
+                                              :color {:field :reason
+                                                      :title "Reason"}}}]})))
+
+(mc-logo)
+
+;; ---
+;; # Households experiencing or threatened
+;; # with homelessness by reason
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to end of Assured Shorthold
+;; # Tenancy (AST)
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to end of AST
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :total-end--of-ast)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total experiencing homelessness due to end of AST
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-end-of-ast :data)
-                                         :y-field :total-end--of-ast
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-end-of-ast :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to end of AST w/Statistical Neighbours")
-                                           :y-field :total-end--of-ast
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to end of private non-AST
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-end-of-non-ast :data)
-                                         :y-field :end-of-non-ast-private-rented-tenancy
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-end-of-non-ast :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to end of non-AST w/Statistical Neighbours")
-                                           :y-field :end-of-non-ast-private-rented-tenancy
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to family or friends no longer willing or able to accomodate
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-family-friends :data)
-                                         :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-family-friends :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to family & friends no longer able or willing w/Statistical Neighbours")
-                                           :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to non-violent relationship breakdown with partner
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-non-violent-breakdown-w-partner :data)
-                                         :y-field :non-violent-relationship-breakdown-with-partner
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-non-violent-breakdown-w-partner :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to non-violent relationship breakdown with partner w/Statistical Neighbours")
-                                           :y-field :non-violent-relationship-breakdown-with-partner
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to domestic abuse
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-domestic-abuse :data)
-                                         :y-field :total-domestic-abuse
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-domestic-abuse :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to domestic abuse w/Statistical Neighbours")
-                                           :y-field :total-domestic-abuse
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to violence or harassment
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-violence-harassment :data)
-                                         :y-field :other-violence-or-harrassment
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-violence-harassment :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to violence or harassment w/Statistical Neighbours")
-                                           :y-field :other-violence-or-harrassment
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to end of social rented tenancy
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-end-of-social-tenancy :data)
-                                         :y-field :total-end-of-social-rented-tenancy
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-end-of-social-tenancy :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to end of social rented tenancy w/Statistical Neighbours")
-                                           :y-field :total-end-of-social-rented-tenancy
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to eviction from supported housing
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-eviction-supported-housing :data)
-                                         :y-field :total-evicted-from-supported-housing
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-eviction-supported-housing :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to eviction from supported housing w/Statistical Neighbours")
-                                           :y-field :total-evicted-from-supported-housing
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to departure from custody
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-custody :data)
-                                         :y-field :custody
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-custody :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to departure from custody w/Statistical Neighbours")
-                                           :y-field :custody
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to departure from psychiatric hospital
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-psychiatric-hospital :data)
-                                         :y-field :hospital-psychiatric
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-psychiatric-hospital :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to departure from psychiatric hospital w/Statistical Neighbours")
-                                           :y-field :hospital-psychiatric
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to departure from general hospital
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-general-hospital :data)
-                                         :y-field :hospital-general
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-general-hospital :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to departure from general hospital w/Statistical Neighbours")
-                                           :y-field :hospital-general
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to departure from LAC placement
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-lac :data)
-                                         :y-field :looked-after-child-placement
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-lac :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to departure from LAC placement w/Statistical Neighbours")
-                                           :y-field :looked-after-child-placement
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to being required to leave accomodation provided by HO as asylum support
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-asylum :data)
-                                         :y-field :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-asylum :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to departure from HO asylum support w/Statistical Neighbours")
-                                           :y-field :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to disability/ill health
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-disability-ill :data)
-                                         :y-field :home-no-longer-suitable-disability-ill-health
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-disability-ill :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to disability/ill health w/Statistical Neighbours")
-                                           :y-field :home-no-longer-suitable-disability-ill-health
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to loss of placement or sponsorship through a resettlement scheme
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-resettlement :data)
-                                         :y-field :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-resettlement :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to loss of placement in resettlement scheme w/Statistical Neighbours")
-                                           :y-field :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                           :y-title "Count experiencing homelessness"
-                                           })))
-
-(mc-logo)
-
-;; ---
-;; ## Total experiencing homelessness due to other/unknown reasons
-(clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2R :total-homeless-other :data)
-                                         :y-field :other-reasons--not-known
-                                         :y-title "Count experiencing homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2R :total-homeless-other :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Experiencing Homelessness due to other/unknown reason(s) w/Statistical Neighbours")
-                                           :y-field :other-reasons--not-known
-                                           :y-title "Count experiencing homelessness"
-                                           })))
+           (clerk/col (clerk/vl (double-line-chart {:ds A2R
+                                                    :y-field-1 :total-end--of-ast-per-000
+                                                    :y-field-2 :total-end--of-ast
+                                                    :y-title-1 "Count experiencing homelessness per 1000"
+                                                    :y-title-2 "Count experiencing homelessness"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :total-end--of-ast
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                                :la-name la-name
+                                                                :title (str la-name " Total Experiencing Homelessness per 1000 due to end of AST w/Statistical Neighbours")
+                                                                :y-field :total-end--of-ast-per-000
+                                                                :y-title "Count per 1000"
+                                                                }) [:layout :height] 400))
+                      (clerk/plotly
+                       (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                                :la-name la-name
+                                                                :title (str la-name " Total Experiencing Homelessness due to end of AST w/Statistical Neighbours")
+                                                                :y-field :total-end--of-ast
+                                                                :y-title "Count"
+                                                                }) [:layout :height] 400))))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened with homelessness due to end of AST
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-end-of-ast :data)
-                                         :y-field :total-end--of-ast
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-end-of-ast :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened with Homelessness due to end of AST w/Statistical Neighbours")
-                                           :y-field :total-end--of-ast
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :total-end--of-ast-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :total-end--of-ast
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened with Homelessness due to end of AST w/Statistical Neighbours")
+                                                      :y-field :total-end--of-ast-per-000
+                                                      :y-title "Count threatened w/homelessness"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened with Homelessness due to end of AST w/Statistical Neighbours")
+                                                      :y-field :total-end--of-ast
+                                                      :y-title "Count threatened w/homelessness"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to end of private non-assured
+;; # shorthold tenacy (non-AST)
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to end of non-AST
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :end-of-non-ast-private-rented-tenancy)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to end of private non-AST
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-end-of-non-ast :data)
-                                         :y-field :end-of-non-ast-private-rented-tenancy
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-end-of-non-ast :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to end of non-AST w/Statistical Neighbours")
-                                           :y-field :end-of-non-ast-private-rented-tenancy
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :end-of-non-ast-private-rented-tenancy-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :end-of-non-ast-private-rented-tenancy
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to end of non-AST w/Statistical Neighbours")
+                                                      :y-field :end-of-non-ast-private-rented-tenancy-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to end of non-AST w/Statistical Neighbours")
+                                                      :y-field :end-of-non-ast-private-rented-tenancy
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to end of private non-AST
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :end-of-non-ast-private-rented-tenancy-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :end-of-non-ast-private-rented-tenancy
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to end of non-AST w/Statistical Neighbours")
+                                                      :y-field :end-of-non-ast-private-rented-tenancy-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to end of non-AST w/Statistical Neighbours")
+                                                      :y-field :end-of-non-ast-private-rented-tenancy
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to family or friends
+;; # no longer willing or able to accomodate
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to family or friends no longer willing or able to accomodate
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :family-or-friends-no-longer-willing-or-able-to-accommodate)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to family or friends no longer willing or able to accomodate
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-family-friends :data)
-                                         :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-family-friends :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to family & friends no longer able or willing w/Statistical Neighbours")
-                                           :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened W/Homelessness per 1000 due to family & friends no longer able or willing w/Statistical Neighbours")
+                                                      :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened W/Homelessness due to family & friends no longer able or willing w/Statistical Neighbours")
+                                                      :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to family or friends no longer willing or able to accomodate
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to family & friends no longer able or willing w/Statistical Neighbours") ;; TODO chart titles are too long, can it be spread over two lines?
+                                                      :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to family & friends no longer able or willing w/Statistical Neighbours")
+                                                      :y-field :family-or-friends-no-longer-willing-or-able-to-accommodate
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to non-violent
+;; # relationship breakdown with
+;; # partner
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to non-violent relationship breakdown with partner
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :non-violent-relationship-breakdown-with-partner)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to non-violent relationship breakdown with partner
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-non-violent-breakdown-w-partner :data)
-                                         :y-field :non-violent-relationship-breakdown-with-partner
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-non-violent-breakdown-w-partner :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to non-violent relationship breakdown with partner w/Statistical Neighbours")
-                                           :y-field :non-violent-relationship-breakdown-with-partner
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :non-violent-relationship-breakdown-with-partner-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :non-violent-relationship-breakdown-with-partner
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to non-violent relationship breakdown with partner w/Statistical Neighbours")
+                                                      :y-field :non-violent-relationship-breakdown-with-partner-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to non-violent relationship breakdown with partner w/Statistical Neighbours")
+                                                      :y-field :non-violent-relationship-breakdown-with-partner
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to non-violent relationship breakdown with partner
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :non-violent-relationship-breakdown-with-partner-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :non-violent-relationship-breakdown-with-partner
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to non-violent relationship breakdown with partner w/Statistical Neighbours")
+                                                      :y-field :non-violent-relationship-breakdown-with-partner-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to non-violent relationship breakdown with partner w/Statistical Neighbours")
+                                                      :y-field :non-violent-relationship-breakdown-with-partner
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to domestic abuse
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to domestic abuse
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :total-domestic-abuse)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to domestic abuse
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-domestic-abuse :data)
-                                         :y-field :total-domestic-abuse
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-domestic-abuse :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to domestic abuse w/Statistical Neighbours")
-                                           :y-field :total-domestic-abuse
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :total-domestic-abuse-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :total-domestic-abuse
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to domestic abuse w/Statistical Neighbours")
+                                                      :y-field :total-domestic-abuse-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to domestic abuse w/Statistical Neighbours")
+                                                      :y-field :total-domestic-abuse
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to domestic abuse
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :total-domestic-abuse-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :total-domestic-abuse
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to domestic abuse w/Statistical Neighbours")
+                                                      :y-field :total-domestic-abuse-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to domestic abuse w/Statistical Neighbours")
+                                                      :y-field :total-domestic-abuse
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to violence or
+;; # harassment
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to violence or harassment
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :other-violence-or-harrassment)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to violence or harassment
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-violence-harassment :data)
-                                         :y-field :other-violence-or-harrassment
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-violence-harassment :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to violence or harassment w/Statistical Neighbours")
-                                           :y-field :other-violence-or-harrassment
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :other-violence-or-harrassment-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :other-violence-or-harrassment
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to violence or harassment w/Statistical Neighbours")
+                                                      :y-field :other-violence-or-harrassment-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to violence or harassment w/Statistical Neighbours")
+                                                      :y-field :other-violence-or-harrassment
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to violence or harassment
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :other-violence-or-harrassment-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :other-violence-or-harrassment
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to violence or harassment w/Statistical Neighbours")
+                                                      :y-field :other-violence-or-harrassment-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to violence or harassment w/Statistical Neighbours")
+                                                      :y-field :other-violence-or-harrassment
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to end of
+;; # social rented tenancy
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to end of social rented tenancy
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :total-end-of-social-rented-tenancy)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to end of social rented tenancy
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-end-of-social-tenancy :data)
-                                         :y-field :total-end-of-social-rented-tenancy
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-end-of-social-tenancy :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to end of social rented tenancy w/Statistical Neighbours")
-                                           :y-field :total-end-of-social-rented-tenancy
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :total-end-of-social-rented-tenancy-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :total-end-of-social-rented-tenancy
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to end of social rented tenancy w/Statistical Neighbours")
+                                                      :y-field :total-end-of-social-rented-tenancy-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to end of social rented tenancy w/Statistical Neighbours")
+                                                      :y-field :total-end-of-social-rented-tenancy
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to end of social rented tenancy
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :total-end-of-social-rented-tenancy-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :total-end-of-social-rented-tenancy
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to end of social rented tenancy w/Statistical Neighbours")
+                                                      :y-field :total-end-of-social-rented-tenancy-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to end of social rented tenancy w/Statistical Neighbours")
+                                                      :y-field :total-end-of-social-rented-tenancy
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to eviction
+;; # from supported housing
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to eviction from supported housing
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :total-evicted-from-supported-housing)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to eviction from supported housing
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-eviction-supported-housing :data)
-                                         :y-field :total-evicted-from-supported-housing
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-eviction-supported-housing :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to eviction from supported housing w/Statistical Neighbours")
-                                           :y-field :total-evicted-from-supported-housing
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :total-evicted-from-supported-housing-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :total-evicted-from-supported-housing
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to eviction from supported housing w/Statistical Neighbours")
+                                                      :y-field :total-evicted-from-supported-housing-per-000
+                                                      :y-title "Count threatened w/homelessness"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened /Homelessness due to eviction from supported housing w/Statistical Neighbours")
+                                                      :y-field :total-evicted-from-supported-housing
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to eviction from supported housing
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :total-evicted-from-supported-housing-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :total-evicted-from-supported-housing
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to eviction from supported housing w/Statistical Neighbours")
+                                                      :y-field :total-evicted-from-supported-housing-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to eviction from supported housing w/Statistical Neighbours")
+                                                      :y-field :total-evicted-from-supported-housing
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to departure
+;; # from custody
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to departure from custody
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :custody)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to departure from custody
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-custody :data)
-                                         :y-field :custody
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-custody :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to departure from custody w/Statistical Neighbours")
-                                           :y-field :custody
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :custody-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :custody
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to departure from custody w/Statistical Neighbours")
+                                                      :y-field :custody-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to departure from custody w/Statistical Neighbours")
+                                                      :y-field :custody
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to departure from custody
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :custody-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :custody
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to departure from custody w/Statistical Neighbours")
+                                                      :y-field :custody-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to departure from custody w/Statistical Neighbours")
+                                                      :y-field :custody
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to departure
+;; # from psychiatric hospital
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to departure from psychiatric hospital
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :hospital-psychiatric)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to departure from psychiatric hospital
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-psychiatric-hospital :data)
-                                         :y-field :hospital-psychiatric
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-psychiatric-hospital :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to departure from psychiatric hospital w/Statistical Neighbours")
-                                           :y-field :hospital-psychiatric
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :hospital-psychiatric-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :hospital-psychiatric
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to departure from psychiatric hospital w/Statistical Neighbours")
+                                                      :y-field :hospital-psychiatric-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to departure from psychiatric hospital w/Statistical Neighbours")
+                                                      :y-field :hospital-psychiatric
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to departure from psychiatric hospital
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :hospital-psychiatric-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :hospital-psychiatric
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to departure from psychiatric hospital w/Statistical Neighbours")
+                                                      :y-field :hospital-psychiatric-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to departure from psychiatric hospital w/Statistical Neighbours")
+                                                      :y-field :hospital-psychiatric
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to departure
+;; # from general hospital
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to departure from general hospital
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :hospital-general)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to departure from general hospital
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-general-hospital :data)
-                                         :y-field :hospital-general
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-general-hospital :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to departure from general hospital w/Statistical Neighbours")
-                                           :y-field :hospital-general
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :hospital-general-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :hospital-general
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to departure from general hospital w/Statistical Neighbours")
+                                                      :y-field :hospital-general-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to departure from general hospital w/Statistical Neighbours")
+                                                      :y-field :hospital-general
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to departure from general hospital
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :hospital-general-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :hospital-general
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to departure from general hospital w/Statistical Neighbours")
+                                                      :y-field :hospital-general-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to departure from general hospital w/Statistical Neighbours")
+                                                      :y-field :hospital-general
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to departure
+;; # from LAC placement
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to departure from LAC placement
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :looked-after-child-placement)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to departure from LAC placement
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-lac :data)
-                                         :y-field :looked-after-child-placement
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-lac :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to departure from LAC placement w/Statistical Neighbours")
-                                           :y-field :looked-after-child-placement
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :looked-after-child-placement-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :looked-after-child-placement
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to departure from LAC placement w/Statistical Neighbours")
+                                                      :y-field :looked-after-child-placement-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to departure from LAC placement w/Statistical Neighbours")
+                                                      :y-field :looked-after-child-placement
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to departure from LAC placement
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :looked-after-child-placement-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :looked-after-child-placement
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to departure from LAC placement w/Statistical Neighbours")
+                                                      :y-field :looked-after-child-placement-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to departure from LAC placement w/Statistical Neighbours")
+                                                      :y-field :looked-after-child-placement
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to being required
+;; # to leave accomodation provided
+;; # by HO as asylum support
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to being required to leave accomodation provided by HO as asylum support
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :required-to-leave-accommodation-provided-by-home-office-as-asylum-support)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to being required to leave accomodation provided by HO as asylum support
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-asylum :data)
-                                         :y-field :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-asylum :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to departure from HO asylum support w/Statistical Neighbours")
-                                           :y-field :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :required-to-leave-accommodation-provided-by-home-office-as-asylum-support-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to departure from HO asylum support w/Statistical Neighbours")
+                                                      :y-field :required-to-leave-accommodation-provided-by-home-office-as-asylum-support-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to departure from HO asylum support w/Statistical Neighbours")
+                                                      :y-field :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to being required to leave accomodation provided by HO as asylum support
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :required-to-leave-accommodation-provided-by-home-office-as-asylum-support-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to departure from HO asylum support w/Statistical Neighbours")
+                                                      :y-field :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to departure from HO asylum support w/Statistical Neighbours")
+                                                      :y-field :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to
+;; # disability/ill health
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to disability/ill health
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :home-no-longer-suitable-disability-ill-health)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to disability/ill health
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-disability-ill :data)
-                                         :y-field :home-no-longer-suitable-disability-ill-health
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-disability-ill :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to disability/ill health w/Statistical Neighbours")
-                                           :y-field :home-no-longer-suitable-disability-ill-health
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :home-no-longer-suitable-disability-ill-health-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :home-no-longer-suitable-disability-ill-health
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to disability/ill health w/Statistical Neighbours")
+                                                      :y-field :home-no-longer-suitable-disability-ill-health-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to disability/ill health w/Statistical Neighbours")
+                                                      :y-field :home-no-longer-suitable-disability-ill-health
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to disability/ill health
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :home-no-longer-suitable-disability-ill-health-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :home-no-longer-suitable-disability-ill-health
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to disability/ill health w/Statistical Neighbours")
+                                                      :y-field :home-no-longer-suitable-disability-ill-health
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to disability/ill health w/Statistical Neighbours")
+                                                      :y-field :home-no-longer-suitable-disability-ill-health
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to loss of
+;; # placement or sponsorship
+;; # through a resettlement scheme
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to loss of placement or sponsorship through a resettlement scheme
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to loss of placement or sponsorship through a resettlement scheme
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-resettlement :data)
-                                         :y-field :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-resettlement :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to loss of placement in resettlement scheme w/Statistical Neighbours")
-                                           :y-field :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to loss of placement in resettlement scheme w/Statistical Neighbours")
+                                                      :y-field :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to loss of placement in resettlement scheme w/Statistical Neighbours")
+                                                      :y-field :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; ## Total experiencing homelessness due to loss of placement or sponsorship through a resettlement scheme
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to loss of placement in resettlement scheme w/Statistical Neighbours")
+                                                      :y-field :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to loss of placement in resettlement scheme w/Statistical Neighbours")
+                                                      :y-field :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+                                                      :y-title "Count"
+                                                      }))))
+
+(mc-logo)
+
+;; ---
+;; # Homeless due to
+;; # other/unknown reasons
+
+(mc-logo)
+
+;; ---
+;; ## Comparison of experiencing homelessness vs threatened with homelessness due to other/unknown reasons
+(clerk/row {::clerk/width :full}
+           (clerk/vl (duty-comparison-line-chart :other-reasons--not-known)))
 
 (mc-logo)
 
 ;; ---
 ;; ## Total threatened w/homelessness due to other/unknown reasons
 (clerk/row {::clerk/width :full}
-           (clerk/vl (single-line-chart {:ds (-> A2P :total-homeless-other :data)
-                                         :y-field :other-reasons--not-known
-                                         :y-title "Count threatened w/homelessness"}))
-           (clerk/plotly
-            (neighbour-comparison-boxplot {:neighbour-data (-> A2P :total-homeless-other :data)
-                                           :la-name la-name
-                                           :title (str la-name " Total Threatened W/Homelessness due to other/unknown reason(s) w/Statistical Neighbours")
-                                           :y-field :other-reasons--not-known
-                                           :y-title "Count threatened w/homelessness"
-                                           })))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :other-reasons--not-known-per-000
+                                                    :y-title "Count threatened w/homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2P
+                                                    :y-field :other-reasons--not-known
+                                                    :y-title "Count threatened w/homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness per 1000 due to other/unknown reason(s) w/Statistical Neighbours")
+                                                      :y-field :other-reasons--not-known-per-000
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2P
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Threatened w/Homelessness due to other/unknown reason(s) w/Statistical Neighbours")
+                                                      :y-field :other-reasons--not-known
+                                                      :y-title "Count"
+                                                      }))))
 
 (mc-logo)
 
 ;; ---
-;; ## Comparison of all reasons for homelessness
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data la-reasons-for-homelessness
-                          :title la-name
-                          :x-field :reason
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of summarised reasons for homelessness
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data summarised-reason-for-homelessness
-                          :title la-name
-                          :x-field :reason
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of specific reasons for homelessness
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data specific-reasons-for-homelessness
-                          :title la-name
-                          :x-field :reason
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to end of AST
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:total-end--of-ast} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to end of AST
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:total-end--of-ast} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to end of non-AST
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:end-of-non-ast-private-rented-tenancy} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to family or friends no longer willing or able to accomodate
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:family-or-friends-no-longer-willing-or-able-to-accommodate} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to non-violent relationship breakdown with partner
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:non-violent-relationship-breakdown-with-partner} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to domestic abuse
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:total-domestic-abuse} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to violence or harassment
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:other-violence-or-harrassment} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to end of social rented tenancy
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:total-end-of-social-rented-tenancy} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to eviction from supported housing
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:total-evicted-from-supported-housing} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to departure from custody
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:custody} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to departure from psychiatric hospital
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:hospital-psychiatric} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to departure from general hospital
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:hospital-general} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to departure from LAC placement
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:looked-after-child-placement} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to being required to leave accomodation provided by HO as asylum support
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:required-to-leave-accommodation-provided-by-home-office-as-asylum-support} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to disability/ill health
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:home-no-longer-suitable-disability-ill-health} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to loss of placement or sponsorship through a resettlement scheme
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
-
-(mc-logo)
-
-;; ---
-;; ## Comparison of experiencing homelessness vs threatened with homelessness due to other/unknown reasons
-(clerk/row
- {::clerk/width :full}
- (clerk/plotly
-  (la-comparison-boxplot {:la-data (tc/select-rows la-reasons-&-threatened-with-homelessness #(#{:other-reasons--not-known} (:reason %)))
-                          :title la-name
-                          :x-field :duty
-                          ;;:x-title "Reason for experiencing homelessness"
-                          :y-field :count
-                          :y-title "Number experiencing homelessness"})))
+;; ## Total experiencing homelessness due to other/unknown reasons
+(clerk/row {::clerk/width :full}
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :other-reasons--not-known-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
+                      (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :other-reasons--not-known
+                                                    :y-title "Count experiencing homelessness"})))
+           (clerk/col (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness per 1000 due to other/unknown reason(s) w/Statistical Neighbours")
+                                                      :y-field :other-reasons--not-known
+                                                      :y-title "Count per 1000"
+                                                      }))
+                      (clerk/plotly
+                       (neighbour-comparison-boxplot {:neighbour-data A2R
+                                                      :la-name la-name
+                                                      :title (str la-name " Total Experiencing Homelessness due to other/unknown reason(s) w/Statistical Neighbours")
+                                                      :y-field :other-reasons--not-known
+                                                      :y-title "Count"
+                                                      }))))
 
 (mc-logo)
 
 {::clerk/visibility {:result :hide}}
-
-(comment
-  ;; # TODO
-  ;; ## Analysis
-  ;; ideas?
-  ;; ## Processing
-  ;; Read in files once, rather than reading each file every time a new ds is made (e.g. A1 ds)
-  )
