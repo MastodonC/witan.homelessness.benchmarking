@@ -5,34 +5,73 @@
    [tablecloth.api :as tc]
    [witan.homelessness.benchmarking.assessments :as bass]))
 
-(def sn-model-long-path "./lait-2025/sn-model-long.csv")
+(def lait-model-long-path "./lait-2025/sn-model-long.csv")
 
-(def model
-  (with-open [in (-> (io/resource sn-model-long-path)
+(def global-model-path "./Clustering-similar-local-authorities-in-the-UK/clusteringsimilarlocalauthoritiesandnearestneighbours.xlsx")
+
+(def lait-model
+  (with-open [in (-> (io/resource lait-model-long-path)
                      io/file
                      io/input-stream)]
     (-> in
         (tc/dataset {:key-fn (fn [k] (-> k s/lower-case keyword))
                      :file-type :csv}))))
 
+(def global-model
+  (let [global-neighbours-raw (-> {:resource-file-name global-model-path}
+                                  bass/->map-of-datasets
+                                  (get  "7.a"))
+        headers (-> global-neighbours-raw
+                    (tc/drop-rows (range 0 3))
+                    (tc/select-rows 0)
+                    (tc/rows :as-seq)
+                    first)
+        global-neighbours-ds (-> global-neighbours-raw
+                                 (tc/drop-rows (range 0 4))
+                                 (tc/rename-columns (->>  headers
+                                                          (map (fn [x y] (assoc {} x y)) (keys global-neighbours-raw))
+                                                          (reduce merge))))]
+    (-> global-neighbours-ds
+        (tc/select-columns (into ["Local Authority Code" "Local Authority Name"] (->> global-neighbours-ds keys (filter #(clojure.string/includes? % "code")))))
+        (tc/pivot->longer (complement #{"Local Authority Code" "Local Authority Name"}) {:target-columns :sn
+                                                                                         :splitter #"Neighbour (.*): code"
+                                                                                         :value-column-name :sn_code})
+        (tc/left-join (-> global-neighbours-ds
+                          (tc/select-columns (into ["Local Authority Code" "Local Authority Name"] (->> global-neighbours-ds keys (filter #(clojure.string/includes? % "name")))))
+                          (tc/pivot->longer (complement #{"Local Authority Code" "Local Authority Name"}) {:target-columns :sn
+                                                                                                           :splitter #"Neighbour (.*): name"
+                                                                                                           :value-column-name :sn_name})) ["Local Authority Code" "Local Authority Name" :sn])
+        (tc/drop-columns ["7.a-right.Local Authority Code" "7.a-right.Local Authority Name" :7.a-right.sn])
+        (tc/rename-columns {"Local Authority Code" :la_code
+                            "Local Authority Name" :la_name})
+        (tc/add-column :sn_prox nil)
+        (tc/order-by [:la_code :sn]))))
+
 (def unitary-authorities
   (delay
     (into (sorted-set) (:code @bass/A1))))
 
 (defn neighbours
-  ([la-name nearest-neighbours]
-   (-> nearest-neighbours
-       (tc/select-rows #(@unitary-authorities (:sn_code %)))
-       (tc/select-rows #(@unitary-authorities (:la_code %)))
-       (tc/select-rows #(= la-name (:la_name %)))))
+  ([la-name model]
+   (let [result (-> model
+                    (tc/select-rows #(@unitary-authorities (:sn_code %)))
+                    (tc/select-rows #(@unitary-authorities (:la_code %)))
+                    (tc/select-rows #(= la-name (:la_name %))))]
+     (cond
+       (< 10 (tc/row-count result))
+       (tc/select-rows result (range 0 10))
+       :else
+       result)))
   ([la-name]
-   (neighbours la-name model)))
+   (neighbours la-name lait-model)))
 
 (defn neighbours-name-pred
-  ([la-name nearest-neighbours]
-   (into (sorted-set) (-> (neighbours la-name nearest-neighbours) :sn_name)))
+  ([la-name model]
+   (into (sorted-set) (-> la-name
+                          (neighbours model)
+                          :sn_name)))
   ([la-name]
-   (neighbours-name-pred la-name model)))
+   (neighbours-name-pred la-name lait-model)))
 
 (comment
 
