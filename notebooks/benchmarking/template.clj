@@ -57,8 +57,14 @@
 (def regional-neighbours (rn/neighbours la-name))
 (def regional-neighbours-pred (rn/neighbours-name-pred la-name))
 
-(def statistical-neighbours (sn/neighbours la-name))
-(def statistical-neighbours-pred (sn/neighbours-name-pred la-name))
+(def statistical-neighbours (let [lait-result (sn/neighbours la-name)]
+                              (if (= 10 (tc/row-count lait-result))
+                                lait-result
+                                (sn/neighbours la-name sn/global-model))))
+(def statistical-neighbours-pred (let [lait-result (sn/neighbours-name-pred la-name)]
+                                   (if (= 10 (count lait-result))
+                                     lait-result
+                                     (sn/neighbours-name-pred la-name sn/global-model))))
 
 (
  ;; Data
