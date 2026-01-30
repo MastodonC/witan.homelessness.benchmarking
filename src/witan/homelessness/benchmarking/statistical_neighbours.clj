@@ -2,7 +2,8 @@
   (:require
    [clojure.string :as s]
    [clojure.java.io :as io]
-   [tablecloth.api :as tc]))
+   [tablecloth.api :as tc]
+   [witan.homelessness.benchmarking.assessments :as bass]))
 
 (def sn-model-long-path "./lait-2025/sn-model-long.csv")
 
@@ -14,10 +15,15 @@
         (tc/dataset {:key-fn (fn [k] (-> k s/lower-case keyword))
                      :file-type :csv}))))
 
+(def unitary-authorities
+  (delay
+    (into (sorted-set) (:code @bass/A1))))
 
 (defn neighbours
   ([la-name nearest-neighbours]
    (-> nearest-neighbours
+       (tc/select-rows #(@unitary-authorities (:sn_code %)))
+       (tc/select-rows #(@unitary-authorities (:la_code %)))
        (tc/select-rows #(= la-name (:la_name %)))))
   ([la-name]
    (neighbours la-name model)))
