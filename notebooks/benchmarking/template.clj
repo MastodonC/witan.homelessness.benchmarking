@@ -57,8 +57,14 @@
 (def regional-neighbours (rn/neighbours la-name))
 (def regional-neighbours-pred (rn/neighbours-name-pred la-name))
 
-(def statistical-neighbours (sn/neighbours la-name))
-(def statistical-neighbours-pred (sn/neighbours-name-pred la-name))
+(def statistical-neighbours (let [lait-result (sn/neighbours la-name)]
+                              (if (= 10 (tc/row-count lait-result))
+                                lait-result
+                                (sn/neighbours la-name sn/global-model))))
+(def statistical-neighbours-pred (let [lait-result (sn/neighbours-name-pred la-name)]
+                                   (if (= 10 (count lait-result))
+                                     lait-result
+                                     (sn/neighbours-name-pred la-name sn/global-model))))
 
 (
  ;; Data
@@ -561,11 +567,9 @@
 ;; ---
 ;; ## Total experiencing homelessness due to end of AST
 (clerk/row {::clerk/width :full}
-           (clerk/col (clerk/vl (double-line-chart {:ds A2R
-                                                    :y-field-1 :total-end--of-ast-per-000
-                                                    :y-field-2 :total-end--of-ast
-                                                    :y-title-1 "Count experiencing homelessness per 1000"
-                                                    :y-title-2 "Count experiencing homelessness"}))
+           (clerk/col (clerk/vl (single-line-chart {:ds A2R
+                                                    :y-field :total-end--of-ast-per-000
+                                                    :y-title "Count experiencing homelessness per 1000"}))
                       (clerk/vl (single-line-chart {:ds A2R
                                                     :y-field :total-end--of-ast
                                                     :y-title "Count experiencing homelessness"})))
