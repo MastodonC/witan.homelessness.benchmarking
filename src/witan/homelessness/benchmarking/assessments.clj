@@ -5,6 +5,10 @@
    [tablecloth.api :as tc]
    [tech.v3.libs.fastexcel :as fst]))
 
+(def assessments-202509 {:resource-file-name "./homelessness-statistics/Statutory_Homelessness_Detailed_Local_Authority_Data_202509.xlsx"
+                         :quarter "09"
+                         :year 2025})
+
 (def assessments-202506 {:resource-file-name "./homelessness-statistics/Statutory_Homelessness_Detailed_Local_Authority_Data_202506.xlsx"
                          :quarter "06"
                          :year 2025})
@@ -108,7 +112,8 @@
 
 (def assessments-data
   "not including data prior to June 2020"
-  [assessments-202506
+  [assessments-202509
+   assessments-202506
    assessments-202503
    assessments-202412
    assessments-202409
@@ -334,7 +339,33 @@
   (-> @A1
       (tc/select-rows #(#{"E09000007"} (:code %)))
       (tc/select-columns [:year :quarter
-                          :homeless-relief-duty-owed4])
-      )
+                          :homeless-relief-duty-owed4]))
+  ;; A1 [21 3]:
+
+  ;; | :year | :quarter | :homeless-relief-duty-owed4 |
+  ;; |------:|----------|-----------------------------|
+  ;; |  2025 |       09 |                       323.0 |
+  ;; |  2025 |       06 |                       303.0 |
+  ;; |  2025 |       03 |                       326.0 |
+  ;; |  2024 |       12 |                       280.0 |
+  ;; |  2024 |       09 |                       228.0 |
+  ;; |  2024 |       06 |                          .. |
+  ;; |  2024 |       03 |                       260.0 |
+  ;; |  2023 |       12 |                       225.0 |
+  ;; |  2023 |       09 |                       156.0 |
+  ;; |  2023 |       06 |                       161.0 |
+  ;; |   ... |      ... |                         ... |
+  ;; |  2023 |       03 |                       159.0 |
+  ;; |  2022 |       12 |                       115.0 |
+  ;; |  2022 |       09 |                       138.0 |
+  ;; |  2022 |       06 |                       128.0 |
+  ;; |  2022 |       03 |                       171.0 |
+  ;; |  2021 |       12 |                       125.0 |
+  ;; |  2021 |       09 |                       142.0 |
+  ;; |  2021 |       06 |                       150.0 |
+  ;; |  2021 |       03 |                       168.0 |
+  ;; |  2020 |       12 |                       165.0 |
+  ;; |  2020 |       09 |                       206.0 |
+
 
   )
