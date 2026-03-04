@@ -87,7 +87,13 @@
     (-> @bass/A1
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
-                            :homeless-relief-duty-owed4]))))
+                            :homeless-relief-duty-owed4
+                            :threatened-with-homelessness-within-56-days-prevention-duty-owed])
+        #_(tc/map-columns :total-homeless
+                          [:homeless-relief-duty-owed4
+                           :threatened-with-homelessness-within-56-days-prevention-duty-owed]
+                          (fn [relief prevention] (+ relief prevention))))))
+;; TODO fix, currently doesn't work due to missing data ("..", etc.)
 
 (def number-threatened-w-homeless
   "prevention duty owed"
