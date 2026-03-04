@@ -134,6 +134,25 @@
    assessments-202012
    assessments-202009])
 
+(def assessments-parser-fn
+  {:code                                                                       :string
+   :name                                                                       :string
+   :total-initial-assessments                                                  :int32 ;; but needs to handle strings/nils
+   :total-owed-a-prevention-or-relief-duty                                     :int32 ;; as above and so one
+   :threatened-with-homelessness-within-56-days-prevention-duty-owed           :int32
+   :due-to-service-of-valid-section-21-notice3                                 :int32
+   :homeless-relief-duty-owed4                                                 :int32
+   :not-homeless-nor-threatened-with-homelessness-within-56-days-no-duty-owed  :int32
+   :withdrew-application--before-assessment-no-duty-owed                       :int32
+   :not-eligible--no-longer-eligible-no-duty-owed                              :int32
+   :number-of-households--in-area-1000                                         :int32
+   :households-assessed-as-threatened-with-homelessness-per-1000               :float64 ;; or double?
+   :households-assessed-as-homeless-per-1000                                   :float64 ;; or double? and handle strings/missing
+   :withdrew-application--before-assessment-no-duty-owed⁷                      :int32
+   :total-initial-assessments12                                                :int32
+   :number-of-households--in-area4-1000                                        :int32})
+;; TODO currently not using other datasets outside A1 but would need to repeat this parser-fn for all them really
+
 (defn ->map-of-datasets
   "Read homelessness statistics data from xlsx (converted from ods in
    LibreOffice Calc)"
@@ -145,7 +164,7 @@
     (as-> in $
       (fst/workbook->datasets $ (assoc options
                                        :header-row? false
-                                       :key-fn      keyword))
+                                       :key-fn      keyword)) ;; TODO add in parser-fn to coerce datatypes
       (reduce (fn [m coll] (assoc m (tc/dataset-name coll) coll)) {} $))))
 
 (defn find-header-range [ds & {:keys [rows]
