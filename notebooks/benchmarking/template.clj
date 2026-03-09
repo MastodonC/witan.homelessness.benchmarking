@@ -501,7 +501,14 @@
                               (tc/map-columns :reason #(-> %
                                                            name
                                                            (str/replace "-" " ")
-                                                           str/capitalize)))]
+                                                           str/capitalize)))
+      color-map (cv2/color-map raw-threatened-data
+                               :reason
+                               (cv2/color-and-shape-lookup
+                                (map #(-> %
+                                          name
+                                          (str/replace "-" " ")
+                                          str/capitalize) summarised-reason-for-homelessness-keys)))]
   (clerk/row {::clerk/width :full}
              (clerk/vl {:hconcat [{:data {:values (tc/rows raw-threatened-data :as-maps)}
                                    :mark "bar"
@@ -518,13 +525,7 @@
                                                             :legend {:labelFontSize 15
                                                                      :titleFontSize 15
                                                                      :labelLimit 0}}
-                                                           (cv2/color-map raw-threatened-data
-                                                                          :reason
-                                                                          (cv2/color-and-shape-lookup
-                                                                           (map #(-> %
-                                                                                     name
-                                                                                     (str/replace "-" " ")
-                                                                                     str/capitalize) summarised-reason-for-homelessness-keys))))}}
+                                                           color-map)}}
                                   {:data {:values (-> summarised-reason-for-homelessness
                                                       (tc/map-columns :reason #(-> %
                                                                                    name
@@ -540,8 +541,11 @@
                                               :x {:field :date
                                                   :axis {:title "Quarter" :titleFontSize 18.0
                                                          :labelFontSize 15.0}}
-                                              :color {:field :reason
-                                                      :title "Reason"}}}]})))
+                                              :color (into {:title "Reason"
+                                                            :legend {:labelFontSize 15
+                                                                     :titleFontSize 15
+                                                                     :labelLimit 0}}
+                                                           color-map)}}]})))
 
 (mc-logo)
 
