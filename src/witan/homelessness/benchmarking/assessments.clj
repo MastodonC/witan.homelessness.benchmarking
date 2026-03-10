@@ -157,7 +157,7 @@
   "Read homelessness statistics data from xlsx (converted from ods in
    LibreOffice Calc)"
   [& {:keys [resource-file-name file-path options]
-      :or    {resource-file-name assessments-202503}}]
+      :or    {resource-file-name (:resource-file-name assessments-202503)}}]
   (with-open [in (-> (or file-path (io/resource resource-file-name))
                      io/file
                      io/input-stream)]
