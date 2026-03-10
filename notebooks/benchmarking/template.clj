@@ -94,6 +94,7 @@
                            :threatened-with-homelessness-within-56-days-prevention-duty-owed]
                           (fn [relief prevention] (+ relief prevention))))))
 ;; TODO fix, currently doesn't work due to missing data ("..", etc.)
+;; just needs to be able to handle nils
 
 (def number-threatened-w-homeless
   "prevention duty owed"
