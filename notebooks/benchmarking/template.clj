@@ -87,7 +87,14 @@
     (-> @bass/A1
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
-                            :homeless-relief-duty-owed4]))))
+                            :homeless-relief-duty-owed4
+                            :threatened-with-homelessness-within-56-days-prevention-duty-owed])
+        (tc/map-columns :total-homeless
+                        [:homeless-relief-duty-owed4
+                         :threatened-with-homelessness-within-56-days-prevention-duty-owed]
+                        (fn [relief prevention] (if (some nil? [relief prevention])
+                                                  nil
+                                                  (+ relief prevention)))))))
 
 (def number-threatened-w-homeless
   "prevention duty owed"
@@ -103,7 +110,14 @@
     (-> @bass/A1
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
-                            :households-assessed-as-homeless-per-1000]))))
+                            :households-assessed-as-homeless-per-1000
+                            :households-assessed-as-threatened-with-homelessness-per-1000])
+        (tc/map-columns :total-homeless-per-000
+                        [:households-assessed-as-homeless-per-1000
+                         :households-assessed-as-threatened-with-homelessness-per-1000]
+                        (fn [relief prevention] (if (some nil? [relief prevention])
+                                                  nil
+                                                  (+ relief prevention)))))))
 
 (def number-threatened-w-homeless-per-000
   "prevention duty owed per 000"
@@ -328,6 +342,39 @@
                                   :titleX 60}}}}]
    :resolve {:scale {:y "independent"}}})
 
+(defn stacked-area-chart [{:keys [ds y-field-1 y-field-2 y-title]}]
+  {:data {:values (-> ds
+                      (tc/select-rows #(#{la-name} (:name %)))
+                      (tc/pivot->longer [y-field-1 y-field-2]
+                                        {:value-column-name :count
+                                         :target-columns :homelessness-type})
+                      (tc/map-columns :homelessness-type #(-> %
+                                                              name
+                                                              (s/replace "-" " ")
+                                                              (s/capitalize )))
+                      (tc/order-by :date)
+                      (tc/rows :as-maps))}
+   :mark {:type "area"}
+   :encoding {:x {:field :date :type "temporal"
+                  :axis {:title "Quarter" :titleFontSize 18.0
+                         :labelFontSize 15.0}}
+              :y {:aggregate "sum"
+                  :field :count
+                  :type "quantitative"
+                  :axis {:title y-title :titleFontSize 18.0
+                         :labelFontSize 15.0}}
+              :color {:field :homelessness-type :type "nominal"
+                      :title "Homelessness Type"}}})
+
+(defn normalised-stacked-area-chart [{:keys [ds y-field-1 y-field-2 y-title]}]
+  (-> {:ds ds
+       :y-field-1 y-field-1
+       :y-field-2 y-field-2
+       :y-title y-title}
+      stacked-area-chart
+      (assoc-in [:encoding :y :stack] "normalize")))
+;; TODO need to adjust legend space
+
 (defn neighbour-comparison-boxplot
   [{:keys [neighbour-data la-name title y-field y-title x-field x-title max-y]
     :or {x-field :date
@@ -376,6 +423,8 @@
               :xaxis {:title x-title}
               :yaxis {:rangemode "tozero" :range (when max-y [0 max-y])
                       :title y-title}
+              :yaxis2 {:rangemode "tozero" :range (when max-y [0 max-y])
+                       :title y-title :overlaying "y" :side "right"}
               :height 400
               :width 1150
               :showlegend false}
@@ -449,24 +498,49 @@
 ;; ---
 ;; ## Total experiencing homelessness
 (clerk/row {::clerk/width :full}
-           (clerk/col (clerk/vl (single-line-chart {:ds number-homeless-per-000
-                                                    :y-field :households-assessed-as-homeless-per-1000
-                                                    :y-title "Count of homeless relief owed per 1000"}))
-                      (clerk/vl (single-line-chart {:ds number-homeless
-                                                    :y-field :homeless-relief-duty-owed4
-                                                    :y-title "Count of homeless relief duty owed"})))
-           (clerk/col (clerk/plotly
-                       (neighbour-comparison-boxplot {:neighbour-data number-homeless-per-000
-                                                      :la-name la-name
-                                                      :title (str la-name " Total Experiencing Homelessness per 1000 w/Statistical Neighbours")
-                                                      :y-field :households-assessed-as-homeless-per-1000
-                                                      :y-title "Count per 1000"}))
-                      (clerk/plotly
-                       (neighbour-comparison-boxplot {:neighbour-data number-homeless
-                                                      :la-name la-name
-                                                      :title (str la-name " Total Experiencing Homelessness w/Statistical Neighbours")
-                                                      :y-field :homeless-relief-duty-owed4
-                                                      :y-title "Count"}))))
+           (clerk/vl (normalised-stacked-area-chart {:ds number-homeless-per-000
+                                                     :y-field-1 :households-assessed-as-homeless-per-1000
+                                                     :y-field-2 :households-assessed-as-threatened-with-homelessness-per-1000
+                                                     :y-title "Count of homeless per 1000"}))
+           (clerk/plotly
+            (neighbour-comparison-boxplot {:neighbour-data number-homeless-per-000
+                                           :la-name la-name
+                                           :title (str la-name " Total Homeless per 1000 w/Statistical Neighbours")
+                                           :y-field :total-homeless-per-000
+                                           :y-title "Count per 1000"})))
+
+(mc-logo)
+
+;; ---
+;; ## Benchmark proportions threatened vs experiencing
+(clerk/row {::clerk/width :full}
+           (clerk/col
+            (clerk/plotly
+             (neighbour-comparison-boxplot {:neighbour-data (-> number-homeless-per-000
+                                                                (tc/map-columns :proportion-str [:households-assessed-as-homeless-per-1000
+                                                                                                 :households-assessed-as-threatened-with-homelessness-per-1000
+                                                                                                 :total-homeless-per-000]
+                                                                                (fn [exp thr total] (when (number? total) (str (int (* 100 (/ exp total))) "/" (int (* 100 (/ thr total)))))))
+                                                                (tc/map-columns :proportion [:households-assessed-as-threatened-with-homelessness-per-1000
+                                                                                             :total-homeless-per-000]
+                                                                                (fn [thr total] (when (number? total) (int (* 100 (/ thr total)))))))
+                                            :la-name la-name
+                                            :title (str la-name " % Threatened w/Homelessness w/Statistical Neighbours")
+                                            :y-field :proportion
+                                            :y-title "% Threatened"}))
+            (clerk/plotly
+             (neighbour-comparison-boxplot {:neighbour-data (-> number-homeless-per-000
+                                                                (tc/map-columns :proportion-str [:households-assessed-as-homeless-per-1000
+                                                                                                 :households-assessed-as-threatened-with-homelessness-per-1000
+                                                                                                 :total-homeless-per-000]
+                                                                                (fn [exp thr total] (when (number? total) (str (int (* 100 (/ exp total))) "/" (int (* 100 (/ thr total)))))))
+                                                                (tc/map-columns :proportion [:households-assessed-as-homeless-per-1000
+                                                                                             :total-homeless-per-000]
+                                                                                (fn [exp total] (when (number? total) (int (* 100 (/ exp total)))))))
+                                            :la-name la-name
+                                            :title (str la-name " % Experiencing Homelessness w/Statistical Neighbours")
+                                            :y-field :proportion
+                                            :y-title "% Experiencing"}))))
 
 (mc-logo)
 
@@ -480,18 +554,13 @@
                                                     :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
                                                     :y-title "Count of homeless prevention owed"})))
 
-           (clerk/col (clerk/plotly
-                       (neighbour-comparison-boxplot {:neighbour-data number-threatened-w-homeless-per-000
-                                                      :la-name la-name
-                                                      :title (str la-name " Total Threatened with Homelessness w/Statistical Neighbours")
-                                                      :y-field :households-assessed-as-threatened-with-homelessness-per-1000
-                                                      :y-title "Count per 1000"}))
-                      (clerk/plotly
-                       (neighbour-comparison-boxplot {:neighbour-data number-threatened-w-homeless
-                                                      :la-name la-name
-                                                      :title (str la-name " Total Threatened with Homelessness w/Statistical Neighbours")
-                                                      :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
-                                                      :y-title "Count"}))))
+           (clerk/col
+            (clerk/plotly
+             (neighbour-comparison-boxplot {:neighbour-data number-threatened-w-homeless
+                                            :la-name la-name
+                                            :title (str la-name " Total Threatened with Homelessness w/Statistical Neighbours")
+                                            :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
+                                            :y-title "Count"}))))
 
 (mc-logo)
 
