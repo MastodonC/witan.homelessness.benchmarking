@@ -342,6 +342,39 @@
                                   :titleX 60}}}}]
    :resolve {:scale {:y "independent"}}})
 
+(defn stacked-area-chart [{:keys [ds y-field-1 y-field-2 y-title]}]
+  {:data {:values (-> ds
+                      (tc/select-rows #(#{la-name} (:name %)))
+                      (tc/pivot->longer [y-field-1 y-field-2]
+                                        {:value-column-name :count
+                                         :target-columns :homelessness-type})
+                      (tc/map-columns :homelessness-type #(-> %
+                                                              name
+                                                              (s/replace "-" " ")
+                                                              (s/capitalize )))
+                      (tc/order-by :date)
+                      (tc/rows :as-maps))}
+   :mark {:type "area"}
+   :encoding {:x {:field :date :type "temporal"
+                  :axis {:title "Quarter" :titleFontSize 18.0
+                         :labelFontSize 15.0}}
+              :y {:aggregate "sum"
+                  :field :count
+                  :type "quantitative"
+                  :axis {:title y-title :titleFontSize 18.0
+                         :labelFontSize 15.0}}
+              :color {:field :homelessness-type :type "nominal"
+                      :title "Homelessness Type"}}})
+
+(defn normalised-stacked-area-chart [{:keys [ds y-field-1 y-field-2 y-title]}]
+  (-> {:ds ds
+       :y-field-1 y-field-1
+       :y-field-2 y-field-2
+       :y-title y-title}
+      stacked-area-chart
+      (assoc-in [:encoding :y :stack] "normalize")))
+;; TODO need to adjust legend space
+
 (defn neighbour-comparison-boxplot
   [{:keys [neighbour-data la-name title y-field y-title x-field x-title max-y]
     :or {x-field :date
@@ -463,24 +496,19 @@
 ;; ---
 ;; ## Total experiencing homelessness
 (clerk/row {::clerk/width :full}
-           (clerk/col (clerk/vl (single-line-chart {:ds number-homeless-per-000
-                                                    :y-field :households-assessed-as-homeless-per-1000
-                                                    :y-title "Count of homeless relief owed per 1000"}))
-                      (clerk/vl (single-line-chart {:ds number-homeless
-                                                    :y-field :homeless-relief-duty-owed4
-                                                    :y-title "Count of homeless relief duty owed"})))
-           (clerk/col (clerk/plotly
-                       (neighbour-comparison-boxplot {:neighbour-data number-homeless-per-000
-                                                      :la-name la-name
-                                                      :title (str la-name " Total Experiencing Homelessness per 1000 w/Statistical Neighbours")
-                                                      :y-field :households-assessed-as-homeless-per-1000
-                                                      :y-title "Count per 1000"}))
-                      (clerk/plotly
-                       (neighbour-comparison-boxplot {:neighbour-data number-threatened-w-homeless-per-000
-                                                      :la-name la-name
-                                                      :title (str la-name " Total Threatened with Homelessness per 1000 w/Statistical Neighbours")
-                                                      :y-field :households-assessed-as-threatened-with-homelessness-per-1000
-                                                      :y-title "Count per 1000"}))))
+           (clerk/vl (normalised-stacked-area-chart {:ds number-homeless-per-000
+                                                     :y-field-1 :households-assessed-as-homeless-per-1000
+                                                     :y-field-2 :households-assessed-as-threatened-with-homelessness-per-1000
+                                                     :y-title "Count of homeless per 1000"}))
+           (clerk/plotly
+            (neighbour-comparison-boxplot {:neighbour-data number-homeless-per-000
+                                           :la-name la-name
+                                           :title (str la-name " Total Homeless per 1000 w/Statistical Neighbours")
+                                           :y-field :total-homeless-per-000
+                                           :y-title "Count per 1000"})))
+
+(mc-logo)
+
 
 (mc-logo)
 
