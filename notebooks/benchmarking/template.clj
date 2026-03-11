@@ -89,12 +89,12 @@
         (tc/select-columns [:date :name :quarter :year
                             :homeless-relief-duty-owed4
                             :threatened-with-homelessness-within-56-days-prevention-duty-owed])
-        #_(tc/map-columns :total-homeless
-                          [:homeless-relief-duty-owed4
-                           :threatened-with-homelessness-within-56-days-prevention-duty-owed]
-                          (fn [relief prevention] (+ relief prevention))))))
-;; TODO fix, currently doesn't work due to missing data ("..", etc.)
-;; just needs to be able to handle nils
+        (tc/map-columns :total-homeless
+                        [:homeless-relief-duty-owed4
+                         :threatened-with-homelessness-within-56-days-prevention-duty-owed]
+                        (fn [relief prevention] (if (some nil? [relief prevention])
+                                                  nil
+                                                  (+ relief prevention)))))))
 
 (def number-threatened-w-homeless
   "prevention duty owed"
