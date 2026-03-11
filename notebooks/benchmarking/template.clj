@@ -110,7 +110,14 @@
     (-> @bass/A1
         (tc/select-rows #((conj (set statistical-neighbours-pred) la-name) (:name %)))
         (tc/select-columns [:date :name :quarter :year
-                            :households-assessed-as-homeless-per-1000]))))
+                            :households-assessed-as-homeless-per-1000
+                            :households-assessed-as-threatened-with-homelessness-per-1000])
+        (tc/map-columns :total-homeless-per-000
+                        [:households-assessed-as-homeless-per-1000
+                         :households-assessed-as-threatened-with-homelessness-per-1000]
+                        (fn [relief prevention] (if (some nil? [relief prevention])
+                                                  nil
+                                                  (+ relief prevention)))))))
 
 (def number-threatened-w-homeless-per-000
   "prevention duty owed per 000"
