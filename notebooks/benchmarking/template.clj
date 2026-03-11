@@ -423,6 +423,8 @@
               :xaxis {:title x-title}
               :yaxis {:rangemode "tozero" :range (when max-y [0 max-y])
                       :title y-title}
+              :yaxis2 {:rangemode "tozero" :range (when max-y [0 max-y])
+                       :title y-title :overlaying "y" :side "right"}
               :height 400
               :width 1150
               :showlegend false}
