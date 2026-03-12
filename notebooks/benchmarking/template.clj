@@ -431,6 +431,65 @@
      :config {:displayModeBar false
               :displayLogo false}}))
 
+(defn neighbour-comparison-boxplot-2
+  [{:keys [neighbour-data la-name title y-field-1 y-field-2 y-title x-field x-title max-y]
+    :or {x-field :date
+         x-title "Quarter"}}]
+  (let [neighbours statistical-neighbours-pred
+        la-data (-> neighbour-data
+                    (tc/select-rows #(#{la-name} (:name %)))
+                    (tc/order-by :date))
+        box-data (transduce
+                  identity
+                  (fn
+                    ([] {})
+                    ([acc]
+                     (into []
+                           (map (fn [[k v]]
+                                  {:x k
+                                   :y (:y v)
+                                   :text (:text v)
+                                   :name k
+                                   :marker {:color "orange"}
+                                   :boxpoints "all"
+                                   :pointpos -1.8
+                                   :jitter 0.3
+                                   :type "box"
+                                   :yaxis "y2"}))
+                           acc))
+                    ([acc x]
+                     (-> acc
+                         (update-in [(x-field x) :y] conj (y-field-1 x))
+                         (update-in [(x-field x) :text] conj (:name x)))))
+                  (-> neighbour-data
+                      (tc/drop-rows #(#{la-name} (:name %)))
+                      (tc/rows :as-maps)))]
+    {:data (conj
+            box-data
+            {:x (into [] (la-data x-field))
+             :y (into [] (la-data y-field-1))
+             :y2 (into [] (la-data y-field-2))
+             :text (into [] (la-data :name))
+             :name la-name
+             :marker {:color "blue" :size 14 :symbol "star-diamond"}
+             :mode "markers"
+             :type "scatter"})
+     :layout {:title title
+              :font {:size 18}
+              :scattermode "group"
+              :scattergap 0.7
+              :xaxis {:title x-title}
+              :yaxis {:rangemode "tozero" :range (when max-y [0 max-y])
+                      :title y-title}
+              :yaxis2 {:rangemode "tozero" :range (when max-y [0 max-y])
+                       :title "foo" :overlaying "y"
+                       :side "right"}
+              :height 400
+              :width 1150
+              :showlegend true}
+     :config {:displayModeBar false
+              :displayLogo false}}))
+
 (defn duty-comparison-line-chart [reason-key]
   {:data {:values (-> la-reasons-&-threatened-with-homelessness
                       (tc/select-rows #(#{reason-key} (:reason %)))
@@ -516,24 +575,20 @@
 (clerk/row {::clerk/width :full}
            (clerk/col
             (clerk/plotly
-             (neighbour-comparison-boxplot {:neighbour-data (-> number-homeless-per-000
-                                                                (tc/map-columns :proportion-str [:households-assessed-as-homeless-per-1000
-                                                                                                 :households-assessed-as-threatened-with-homelessness-per-1000
-                                                                                                 :total-homeless-per-000]
-                                                                                (fn [exp thr total] (when (number? total) (str (int (* 100 (/ exp total))) "/" (int (* 100 (/ thr total)))))))
-                                                                (tc/map-columns :proportion [:households-assessed-as-threatened-with-homelessness-per-1000
-                                                                                             :total-homeless-per-000]
-                                                                                (fn [thr total] (when (number? total) (int (* 100 (/ thr total)))))))
-                                            :la-name la-name
-                                            :title (str la-name " % Threatened w/Homelessness w/Statistical Neighbours")
-                                            :y-field :proportion
-                                            :y-title "% Threatened"}))
+             (neighbour-comparison-boxplot-2 {:neighbour-data (-> number-homeless-per-000
+                                                                  (tc/map-columns :proportion-thr [:households-assessed-as-threatened-with-homelessness-per-1000
+                                                                                                   :total-homeless-per-000]
+                                                                                  (fn [thr total] (when (number? total) (int (* 100 (/ thr total))))))
+                                                                  (tc/map-columns :proportion-exp [:households-assessed-as-homeless-per-1000
+                                                                                                   :total-homeless-per-000]
+                                                                                  (fn [exp total] (when (number? total) (int (* 100 (/ exp total)))))))
+                                              :la-name la-name
+                                              :title (str la-name " % Threatened w/Homelessness w/Statistical Neighbours")
+                                              :y-field-1 :proportion-thr
+                                              :y-field-2 :proportion-exp
+                                              :y-title "% Threatened"}))
             (clerk/plotly
              (neighbour-comparison-boxplot {:neighbour-data (-> number-homeless-per-000
-                                                                (tc/map-columns :proportion-str [:households-assessed-as-homeless-per-1000
-                                                                                                 :households-assessed-as-threatened-with-homelessness-per-1000
-                                                                                                 :total-homeless-per-000]
-                                                                                (fn [exp thr total] (when (number? total) (str (int (* 100 (/ exp total))) "/" (int (* 100 (/ thr total)))))))
                                                                 (tc/map-columns :proportion [:households-assessed-as-homeless-per-1000
                                                                                              :total-homeless-per-000]
                                                                                 (fn [exp total] (when (number? total) (int (* 100 (/ exp total)))))))
