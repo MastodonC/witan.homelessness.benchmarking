@@ -343,15 +343,17 @@
    :resolve {:scale {:y "independent"}}})
 
 (defn stacked-area-chart [{:keys [ds y-field-1 y-field-2 y-title]}]
+  ;; to work as expected :y-field-1 should always be those experiencing homelessness
+  ;; and :y-field-2 should be those threatened with homelessness
   {:data {:values (-> ds
                       (tc/select-rows #(#{la-name} (:name %)))
                       (tc/pivot->longer [y-field-1 y-field-2]
                                         {:value-column-name :count
                                          :target-columns :homelessness-type})
                       (tc/map-columns :homelessness-type #(cond
-                                                            (= :households-assessed-as-homeless-per-1000 %)
+                                                            (= y-field-1 %)
                                                             "Experiencing"
-                                                            (= :households-assessed-as-threatened-with-homelessness-per-1000 %)
+                                                            (= y-field-2 %)
                                                             "Threatened"))
                       (tc/order-by :date)
                       (tc/rows :as-maps))}
