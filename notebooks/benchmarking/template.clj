@@ -348,10 +348,11 @@
                       (tc/pivot->longer [y-field-1 y-field-2]
                                         {:value-column-name :count
                                          :target-columns :homelessness-type})
-                      (tc/map-columns :homelessness-type #(-> %
-                                                              name
-                                                              (s/replace "-" " ")
-                                                              (s/capitalize )))
+                      (tc/map-columns :homelessness-type #(cond
+                                                            (= :households-assessed-as-homeless-per-1000 %)
+                                                            "Experiencing"
+                                                            (= :households-assessed-as-threatened-with-homelessness-per-1000 %)
+                                                            "Threatened"))
                       (tc/order-by :date)
                       (tc/rows :as-maps))}
    :mark {:type "area"}
