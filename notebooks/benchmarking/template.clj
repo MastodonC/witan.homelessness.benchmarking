@@ -481,9 +481,11 @@
                                          :text (:text v)
                                          :name k
                                          :marker {:color "orange"}
+                                         :opacity 0
                                          :boxpoints "all"
                                          :pointpos -1.8
                                          :jitter 0.3
+                                         :hoverinfo "none"
                                          :type "box"
                                          :yaxis "y2"}))
                                  acc))
