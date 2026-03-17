@@ -439,41 +439,66 @@
         la-data (-> neighbour-data
                     (tc/select-rows #(#{la-name} (:name %)))
                     (tc/order-by :date))
-        box-data (transduce
-                  identity
-                  (fn
-                    ([] {})
-                    ([acc]
-                     (into []
-                           (map (fn [[k v]]
-                                  {:x k
-                                   :y (:y v)
-                                   :text (:text v)
-                                   :name k
-                                   :marker {:color "orange"}
-                                   :boxpoints "all"
-                                   :pointpos -1.8
-                                   :jitter 0.3
-                                   :type "box"
-                                   :yaxis "y2"}))
-                           acc))
-                    ([acc x]
-                     (-> acc
-                         (update-in [(x-field x) :y] conj (y-field-1 x))
-                         (update-in [(x-field x) :text] conj (:name x)))))
-                  (-> neighbour-data
-                      (tc/drop-rows #(#{la-name} (:name %)))
-                      (tc/rows :as-maps)))]
+        box-data (into (transduce
+                        identity
+                        (fn
+                          ([] {})
+                          ([acc]
+                           (into []
+                                 (map (fn [[k v]]
+                                        {:x k
+                                         :y (:y v)
+                                         :text (:text v)
+                                         :name k
+                                         :marker {:color "orange"}
+                                         :boxpoints "all"
+                                         :pointpos -1.8
+                                         :jitter 0.3
+                                         :type "box"}))
+                                 acc))
+                          ([acc x]
+                           (-> acc
+                               (update-in [(x-field x) :y] conj (y-field-1 x))
+                               (update-in [(x-field x) :text] conj (:name x)))))
+                        (-> neighbour-data
+                            (tc/drop-rows #(#{la-name} (:name %)))
+                            (tc/rows :as-maps)))
+                       (transduce
+                        identity
+                        (fn
+                          ([] {})
+                          ([acc]
+                           (into []
+                                 (map (fn [[k v]]
+                                        {:x k
+                                         :y (:y v)
+                                         :text (:text v)
+                                         :name k
+                                         :marker {:color "orange"}
+                                         :boxpoints "all"
+                                         :pointpos -1.8
+                                         :jitter 0.3
+                                         :type "box"
+                                         :yaxis "y2"}))
+                                 acc))
+                          ([acc x]
+                           (-> acc
+                               (update-in [(x-field x) :y] conj (y-field-1 x))
+                               (update-in [(x-field x) :text] conj (:name x)))))
+                        (-> neighbour-data
+                            (tc/drop-rows #(#{la-name} (:name %)))
+                            (tc/rows :as-maps))))]
     {:data (conj
             box-data
             {:x (into [] (la-data x-field))
              :y (into [] (la-data y-field-1))
-             :y2 (into [] (la-data y-field-2))
              :text (into [] (la-data :name))
              :name la-name
              :marker {:color "blue" :size 14 :symbol "star-diamond"}
              :mode "markers"
-             :type "scatter"})
+             :type "scatter"
+             :zorder 1 ;; FIXME currently does nothing
+             })
      :layout {:title title
               :font {:size 18}
               :scattermode "group"
@@ -481,12 +506,15 @@
               :xaxis {:title x-title}
               :yaxis {:rangemode "tozero" :range (when max-y [0 max-y])
                       :title y-title}
-              :yaxis2 {:rangemode "tozero" :range (when max-y [0 max-y])
-                       :title "foo" :overlaying "y"
+              :yaxis2 {:rangemode "tozero"
+                       :tickmode "sync"
+                       :tickvals [20 40 60 80]
+                       :ticktext ["80" "60" "40" "20"]
+                       :title "% Experiencing" :overlaying "y"
                        :side "right"}
               :height 400
               :width 1150
-              :showlegend true}
+              :showlegend false}
      :config {:displayModeBar false
               :displayLogo false}}))
 
