@@ -433,7 +433,7 @@
      :config {:displayModeBar false
               :displayLogo false}}))
 
-(defn neighbour-comparison-boxplot-2 ;; TODO would be nice to add values to tooltips
+(defn neighbour-comparison-boxplot-2 ;; TODO would be nice to add oppisite values to tooltips
   [{:keys [neighbour-data la-name title y-field-1 y-field-2 y-title x-field x-title max-y]
     :or {x-field :date
          x-title "Quarter"}}]
