@@ -374,7 +374,6 @@
        :y-title y-title}
       stacked-area-chart
       (assoc-in [:encoding :y :stack] "normalize")))
-;; TODO need to adjust legend space
 
 (defn neighbour-comparison-boxplot
   [{:keys [neighbour-data la-name title y-field y-title x-field x-title max-y]
@@ -620,26 +619,6 @@
                                              :y-field-1 :proportion-thr
                                              :y-field-2 :proportion-exp
                                              :y-title "% Threatened"})))
-
-(mc-logo)
-
-;; ---
-;; ## Total threatened with homelessness
-(clerk/row {::clerk/width :full}
-           (clerk/col (clerk/vl (single-line-chart {:ds number-threatened-w-homeless-per-000
-                                                    :y-field :households-assessed-as-threatened-with-homelessness-per-1000
-                                                    :y-title "Count of homeless prevention owed per 1000"}))
-                      (clerk/vl (single-line-chart {:ds number-threatened-w-homeless
-                                                    :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
-                                                    :y-title "Count of homeless prevention owed"})))
-
-           (clerk/col
-            (clerk/plotly
-             (neighbour-comparison-boxplot {:neighbour-data number-threatened-w-homeless
-                                            :la-name la-name
-                                            :title (str la-name " Total Threatened with Homelessness w/Statistical Neighbours")
-                                            :y-field :threatened-with-homelessness-within-56-days-prevention-duty-owed
-                                            :y-title "Count"}))))
 
 (mc-logo)
 
