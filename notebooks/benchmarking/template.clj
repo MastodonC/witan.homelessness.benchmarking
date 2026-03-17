@@ -560,11 +560,16 @@
 (clerk/row
  {::clerk/width :full}
  (clerk/table
-  (-> statistical-neighbours
-      (tc/select-columns [:sn :sn_name :sn_prox])
-      (tc/rename-columns {:sn_name "Neighbour Name"
-                          :sn "Neighbour Rank"
-                          :sn_prox "Statistical Proximity"}))))
+  (let [stat-neighbours (-> statistical-neighbours
+                            (tc/select-columns [:sn :sn_name :sn_prox])
+                            (tc/rename-columns {:sn_name "Neighbour Name"
+                                                :sn "Neighbour Rank"
+                                                :sn_prox "Statistical Proximity"}))]
+    (if (every? nil? (-> stat-neighbours
+                         (get "Statistical Proximity")
+                         distinct))
+      (tc/drop-columns stat-neighbours "Statistical Proximity")
+      stat-neighbours))))
 
 (mc-logo)
 
