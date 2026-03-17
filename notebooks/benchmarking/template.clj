@@ -607,29 +607,19 @@
 ;; ---
 ;; ## Benchmark proportions threatened vs experiencing
 (clerk/row {::clerk/width :full}
-           (clerk/col
-            (clerk/plotly
-             (neighbour-comparison-boxplot-2 {:neighbour-data (-> number-homeless-per-000
-                                                                  (tc/map-columns :proportion-thr [:households-assessed-as-threatened-with-homelessness-per-1000
-                                                                                                   :total-homeless-per-000]
-                                                                                  (fn [thr total] (when (number? total) (int (* 100 (/ thr total))))))
-                                                                  (tc/map-columns :proportion-exp [:households-assessed-as-homeless-per-1000
-                                                                                                   :total-homeless-per-000]
-                                                                                  (fn [exp total] (when (number? total) (int (* 100 (/ exp total)))))))
-                                              :la-name la-name
-                                              :title (str la-name " % Threatened w/Homelessness w/Statistical Neighbours")
-                                              :y-field-1 :proportion-thr
-                                              :y-field-2 :proportion-exp
-                                              :y-title "% Threatened"}))
-            (clerk/plotly
-             (neighbour-comparison-boxplot {:neighbour-data (-> number-homeless-per-000
-                                                                (tc/map-columns :proportion [:households-assessed-as-homeless-per-1000
-                                                                                             :total-homeless-per-000]
-                                                                                (fn [exp total] (when (number? total) (int (* 100 (/ exp total)))))))
-                                            :la-name la-name
-                                            :title (str la-name " % Experiencing Homelessness w/Statistical Neighbours")
-                                            :y-field :proportion
-                                            :y-title "% Experiencing"}))))
+           (clerk/plotly
+            (neighbour-comparison-boxplot-2 {:neighbour-data (-> number-homeless-per-000
+                                                                 (tc/map-columns :proportion-thr [:households-assessed-as-threatened-with-homelessness-per-1000
+                                                                                                  :total-homeless-per-000]
+                                                                                 (fn [thr total] (when (number? total) (int (* 100 (/ thr total))))))
+                                                                 (tc/map-columns :proportion-exp [:households-assessed-as-homeless-per-1000
+                                                                                                  :total-homeless-per-000]
+                                                                                 (fn [exp total] (when (number? total) (int (* 100 (/ exp total)))))))
+                                             :la-name la-name
+                                             :title (str la-name " % Threatened with or Experiencing Homelessness w/Statistical Neighbours")
+                                             :y-field-1 :proportion-thr
+                                             :y-field-2 :proportion-exp
+                                             :y-title "% Threatened"})))
 
 (mc-logo)
 
