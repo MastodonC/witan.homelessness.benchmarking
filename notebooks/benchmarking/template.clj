@@ -510,8 +510,8 @@
                       :title y-title}
               :yaxis2 {:rangemode "tozero"
                        :tickmode "sync"
-                       :tickvals [20 40 60 80]
-                       :ticktext ["80" "60" "40" "20"]
+                       :tickvals [0 20 40 60 80 100]
+                       :ticktext ["100" "80" "60" "40" "20" "0"]
                        :title "% Experiencing" :overlaying "y"
                        :side "right"}
               :height 400
