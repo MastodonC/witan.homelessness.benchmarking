@@ -200,6 +200,21 @@
     (reduce calculate-per-000 $ reason-for-homelessness-keys)))
 
 
+
+(def A2P+A2R
+  (as-> A2R $
+    (tc/rename-columns $ (map (comp keyword #(str % "-per-000") name) reason-for-homelessness-keys) (comp keyword #(str % "-exp") name))
+    (tc/left-join $
+                  (tc/rename-columns A2P (map (comp keyword #(str % "-per-000") name) reason-for-homelessness-keys) (comp keyword #(str % "-thr") name))
+                  [:code :date :name :quarter :year])
+    (reduce (fn [ds k] (tc/map-columns ds k
+                                       [((comp keyword #(str % "-exp") name) k)
+                                        ((comp keyword #(str % "-thr") name) k)]
+                                       (fn [relief prevention] (if (some nil? [relief prevention])
+                                                                 nil
+                                                                 (+ relief prevention)))))
+            $ (map (comp keyword #(str % "-per-000") name) reason-for-homelessness-keys))))
+
 (def la-reasons-for-homelessness
   (-> @bass/A2R
       (tc/select-rows #(#{la-name} (:name %)))
