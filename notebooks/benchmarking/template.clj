@@ -149,6 +149,24 @@
                               :else
                               nil))))
 
+(def reason-for-homelessness-keys
+  [:total-end--of-ast
+   :end-of-non-ast-private-rented-tenancy
+   :family-or-friends-no-longer-willing-or-able-to-accommodate
+   :non-violent-relationship-breakdown-with-partner
+   :total-domestic-abuse
+   :other-violence-or-harrassment
+   :total-end-of-social-rented-tenancy
+   :total-evicted-from-supported-housing
+   :custody
+   :hospital-psychiatric
+   :hospital-general
+   :looked-after-child-placement
+   :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
+   :home-no-longer-suitable-disability-ill-health
+   :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
+   :other-reasons--not-known])
+
 (def A2R
   (as-> @bass/A2R $
     (tc/select-rows $ #((conj (set statistical-neighbours-pred) la-name) (:name %)))
@@ -163,22 +181,7 @@
     (combine-columns $ :other-reasons--not-known
                      :other-reasons--not-known
                      :other-reasons--not-known5)
-    (reduce calculate-per-000 $ [:total-end--of-ast
-                                 :end-of-non-ast-private-rented-tenancy
-                                 :family-or-friends-no-longer-willing-or-able-to-accommodate
-                                 :non-violent-relationship-breakdown-with-partner
-                                 :total-domestic-abuse
-                                 :other-violence-or-harrassment
-                                 :total-end-of-social-rented-tenancy
-                                 :total-evicted-from-supported-housing
-                                 :custody
-                                 :hospital-psychiatric
-                                 :hospital-general
-                                 :looked-after-child-placement
-                                 :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
-                                 :home-no-longer-suitable-disability-ill-health
-                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                 :other-reasons--not-known])))
+    (reduce calculate-per-000 $ reason-for-homelessness-keys)))
 
 (def A2P
   (as-> @bass/A2P $
@@ -194,22 +197,8 @@
     (combine-columns $ :other-reasons--not-known
                      :other-reasons--not-known
                      :other-reasons--not-known5)
-    (reduce calculate-per-000 $ [:total-end--of-ast
-                                 :end-of-non-ast-private-rented-tenancy
-                                 :family-or-friends-no-longer-willing-or-able-to-accommodate
-                                 :non-violent-relationship-breakdown-with-partner
-                                 :total-domestic-abuse
-                                 :other-violence-or-harrassment
-                                 :total-end-of-social-rented-tenancy
-                                 :total-evicted-from-supported-housing
-                                 :custody
-                                 :hospital-psychiatric
-                                 :hospital-general
-                                 :looked-after-child-placement
-                                 :required-to-leave-accommodation-provided-by-home-office-as-asylum-support
-                                 :home-no-longer-suitable-disability-ill-health
-                                 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme
-                                 :other-reasons--not-known])))
+    (reduce calculate-per-000 $ reason-for-homelessness-keys)))
+
 
 (def la-reasons-for-homelessness
   (-> @bass/A2R
