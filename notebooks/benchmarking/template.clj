@@ -512,9 +512,11 @@
               :scattermode "group"
               :scattergap 0.7
               :xaxis {:title x-title}
-              :yaxis {:rangemode "tozero" :range (when max-y [0 max-y])
+              :yaxis {:rangemode "tozero"
+                      :range [0 100]
                       :title y-title}
-              :yaxis2 {:rangemode "tozero"
+              :yaxis2 {:showgrid false
+                       :rangemode "tozero"
                        :tickmode "sync"
                        :tickvals [0 20 40 60 80 100]
                        :ticktext ["100" "80" "60" "40" "20" "0"]
