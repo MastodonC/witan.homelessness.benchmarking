@@ -598,12 +598,12 @@
 (mc-logo)
 
 ;; ---
-;; ## Total experiencing homelessness
+;; ## Total households homeless
 (clerk/row {::clerk/width :full}
            (clerk/vl (normalised-stacked-area-chart {:ds number-homeless-per-000
                                                      :y-field-1 :households-assessed-as-homeless-per-1000
                                                      :y-field-2 :households-assessed-as-threatened-with-homelessness-per-1000
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (neighbour-comparison-boxplot {:neighbour-data number-homeless-per-000
                                            :la-name la-name
@@ -653,7 +653,7 @@
                                            :fontSize 18.0}
                                    :encoding {:y {:aggregate "sum" :field :count
                                                   :stack "normalize"
-                                                  :axis {:title "Households" :titleFontSize 18.0
+                                                  :axis {:title "% of households" :titleFontSize 18.0
                                                          :labelFontSize 15.0}}
                                               :x {:field :date
                                                   :axis {:title "Quarter" :titleFontSize 18.0
@@ -699,7 +699,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :total-end--of-ast-per-000-exp
                                                      :y-field-2 :total-end--of-ast-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -737,7 +737,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :end-of-non-ast-private-rented-tenancy-per-000-exp
                                                      :y-field-2 :end-of-non-ast-private-rented-tenancy-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -775,7 +775,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :family-or-friends-no-longer-willing-or-able-to-accommodate-per-000-exp
                                                      :y-field-2 :family-or-friends-no-longer-willing-or-able-to-accommodate-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -813,7 +813,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :non-violent-relationship-breakdown-with-partner-per-000-exp
                                                      :y-field-2 :non-violent-relationship-breakdown-with-partner-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -850,7 +850,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :total-domestic-abuse-per-000-exp
                                                      :y-field-2 :total-domestic-abuse-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -887,7 +887,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :other-violence-or-harrassment-per-000-exp
                                                      :y-field-2 :other-violence-or-harrassment-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -924,7 +924,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :total-end-of-social-rented-tenancy-per-000-exp
                                                      :y-field-2 :total-end-of-social-rented-tenancy-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -961,7 +961,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :total-evicted-from-supported-housing-per-000-exp
                                                      :y-field-2 :total-evicted-from-supported-housing-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -997,7 +997,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :custody-per-000-exp
                                                      :y-field-2 :custody-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -1035,7 +1035,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :hospital-psychiatric-per-000-exp
                                                      :y-field-2 :hospital-psychiatric-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -1072,7 +1072,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :hospital-general-per-000-exp
                                                      :y-field-2 :hospital-general-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -1110,7 +1110,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :looked-after-child-placement-per-000-exp
                                                      :y-field-2 :looked-after-child-placement-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -1147,7 +1147,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :required-to-leave-accommodation-provided-by-home-office-as-asylum-support-per-000-exp
                                                      :y-field-2 :required-to-leave-accommodation-provided-by-home-office-as-asylum-support-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -1183,7 +1183,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :home-no-longer-suitable-disability-ill-health-per-000-exp
                                                      :y-field-2 :home-no-longer-suitable-disability-ill-health-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -1219,7 +1219,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-per-000-exp
                                                      :y-field-2 :loss-of-placement-or-sponsorship-provided-through-a-resettlement-scheme-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
@@ -1257,7 +1257,7 @@
            (clerk/vl (normalised-stacked-area-chart {:ds A2P+A2R
                                                      :y-field-1 :other-reasons--not-known-per-000-exp
                                                      :y-field-2 :other-reasons--not-known-per-000-thr
-                                                     :y-title "Count of homeless per 1000"}))
+                                                     :y-title "% homeless - threatened vs experiencing"}))
            (clerk/plotly
             (assoc-in (neighbour-comparison-boxplot {:neighbour-data A2P+A2R
                                                      :la-name la-name
