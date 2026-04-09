@@ -3,6 +3,7 @@
    [clojure.java.io :as io]
    [clojure.string :as s]
    [tablecloth.api :as tc]
+   [tech.v3.dataset :as tmd]
    [tech.v3.libs.fastexcel :as fst]))
 
 (def assessments-202509 {:resource-file-name "./homelessness-statistics/Statutory_Homelessness_Detailed_Local_Authority_Data_202509.xlsx"
@@ -134,11 +135,16 @@
    assessments-202012
    assessments-202009])
 
+(defn parse-number [s]
+  (if (number? s)
+    (parse-double (str s))
+    ::tmd/missing))
+
 (defn ->map-of-datasets
   "Read homelessness statistics data from xlsx (converted from ods in
    LibreOffice Calc)"
   [& {:keys [resource-file-name file-path options]
-      :or    {resource-file-name assessments-202503}}]
+      :or    {resource-file-name (:resource-file-name assessments-202503)}}]
   (with-open [in (-> (or file-path (io/resource resource-file-name))
                      io/file
                      io/input-stream)]
@@ -219,7 +225,9 @@
     (apply tc/concat-copying $)
     (tc/map-columns $ :date [:quarter :year]
                     (fn [quarter year]
-                      (str year "-" quarter "-01")))))
+                      (str year "-" quarter "-01")))
+    (reduce (fn [ds k] (tc/map-columns ds k [k] parse-number)) $
+            (remove #(#{:date :quarter :year :code :name} %) (tc/column-names $)))))
 
 
 (def A1
