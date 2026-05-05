@@ -6,6 +6,10 @@
    [tech.v3.dataset :as tmd]
    [tech.v3.libs.fastexcel :as fst]))
 
+(def assessments-202512 {:resource-file-name "./homelessness-statistics/Statutory_Homelessness_Detailed_Local_Authority_Data_202512.xlsx"
+                         :quarter "12"
+                         :year 2025})
+
 (def assessments-202509 {:resource-file-name "./homelessness-statistics/Statutory_Homelessness_Detailed_Local_Authority_Data_202509.xlsx"
                          :quarter "09"
                          :year 2025})
@@ -113,7 +117,8 @@
 
 (def assessments-data
   "not including data prior to June 2020"
-  [assessments-202509
+  [assessments-202512
+   assessments-202509
    assessments-202506
    assessments-202503
    assessments-202412
